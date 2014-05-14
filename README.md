@@ -33,6 +33,11 @@ Structure:
      hyperalignment with hack that's try to be as similar as 
      "HPAL/code/compute_transformations" but in python
 
+=====================================
+
+May 13, 2014
+  1. Reach benchmark performance 64% (align with Neuron result) with HA with both VT 1300 vx, 2203 TRs
+
 May 11, 2014
 
   1. Basic framework finished
@@ -68,6 +73,3 @@ May 11, 2014
   7. [TODO] think about how to write the structure so that it can incorporate 
      more future stuff
 
-May 13, 2014
-  1. Reach benchmark performance 64% (align with Neuron result) with HA with both VT 1300 vx, 2203 TRs
-  

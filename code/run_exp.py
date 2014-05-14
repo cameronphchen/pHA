@@ -60,17 +60,19 @@ options = {'input_path'  : '/mnt/cd/ramadge/pohsuan/pHA/data/input/', \
 
 
 
-# load raw data
+# load movie data after voxel selection by matdata_preprocess.m 
 movie_data_lh = scipy.io.loadmat(options['working_path']+'movie_data_lh_'+str(para['nvoxel'])+'vx.mat')
 movie_data_rh = scipy.io.loadmat(options['working_path']+'movie_data_rh_'+str(para['nvoxel'])+'vx.mat')
 movie_data_lh = movie_data_lh['movie_data_lh'] 
 movie_data_rh = movie_data_rh['movie_data_rh'] 
 
+# load mkdg data after voxel selection by matdata_preprocess.m
 mkdg_data_lh = scipy.io.loadmat(options['working_path']+'mkdg_data_lh_'+str(para['nvoxel'])+'vx.mat')
 mkdg_data_rh = scipy.io.loadmat(options['working_path']+'mkdg_data_rh_'+str(para['nvoxel'])+'vx.mat')
 mkdg_data_lh = mkdg_data_lh['mkdg_data_lh'] 
 mkdg_data_rh = mkdg_data_rh['mkdg_data_rh']
 
+# load label for testing data
 label = scipy.io.loadmat(options['input_path']+'subjall_picall_label.mat')
 label = label['label']
 trn_label = label[0:504]
@@ -78,18 +80,23 @@ tst_label = label[504:560]
 trn_label = np.squeeze(np.asarray(trn_label))
 tst_label = np.squeeze(np.asarray(tst_label))
 
+
+# for niter/niter_unit round, each round the alignment algorithm will run niter_unit iterations
 for i in range(para['niter']/para['niter_unit']):
   
   # alignment phase
   # fit the model to movie data with number of iterations
-
-  new_niter_lh = HA(movie_data_lh, options, para, 'lh')
-  new_niter_rh = HA(movie_data_rh, options, para, 'rh')
+#  new_niter_lh = HA(movie_data_lh, options, para, 'lh')
+#  new_niter_rh = HA(movie_data_rh, options, para, 'rh')
 #  new_niter_lh = HA_swaroop(movie_data_lh, options, para, 'lh')
 #  new_niter_rh = HA_swaroop(movie_data_rh, options, para, 'rh')
-#  new_niter_lh = new_niter_rh = 0
-  assert new_niter_lh == new_niter_rh
 
+  # without any alignment, set new_niter_lh and new_niter_rh=0, the corresponding transformation
+  # matrices are identity matrices
+  new_niter_lh = new_niter_rh = 0
+  
+  #make sure right and left brain alignment are working at the same iterations
+  assert new_niter_lh == new_niter_rh
 
   # classfication
   workspace_lh = np.load(options['working_path']+'HA_lh_'+str(para['nvoxel'])+'vx_'+str(new_niter_lh)+'.npz')
@@ -97,22 +104,16 @@ for i in range(para['niter']/para['niter_unit']):
   transform_lh = workspace_lh['R']
   transform_rh = workspace_rh['R']
 
-
   transformed_data = np.zeros((para['nvoxel']*2 ,56 ,para['nsubjs']))
+
+  # transformed mkdg data with learned transformation matrices
   for m in range(para['nsubjs']):
-    # with alignment
     trfed_lh_tmp = transform_lh[:,:,m].T.dot(mkdg_data_lh[:,:,m])
     trfed_rh_tmp = transform_rh[:,:,m].T.dot(mkdg_data_rh[:,:,m])
-    # without alignment
-#    trfed_lh_tmp = mkdg_data_lh[:,:,m]
-#    trfed_rh_tmp = mkdg_data_rh[:,:,m]
-
     transformed_data[:,:,m] = stats.zscore( np.vstack((trfed_lh_tmp,trfed_rh_tmp)).T ,axis=0, ddof=1).T
-
 
   tst_data = np.zeros(shape = (para['nvoxel']*2,56))
   trn_data = np.zeros(shape = (para['nvoxel']*2,504))
-
   accu = np.zeros(shape=10)
 
   for loo in range(para['nsubjs']):
@@ -124,7 +125,7 @@ for i in range(para['niter']/para['niter_unit']):
       for m in range(para['nsubjs']-1):
         trn_data[:,m*56:(m+1)*56] = transformed_data[:,:,loo_idx[m]]
 
-      # scikit-lean
+      # scikit-learn svm for classification
       clf = NuSVC(nu=0.5, kernel = 'linear')
       clf.fit(trn_data.T, trn_label)
       pred_label = clf.predict(tst_data.T)

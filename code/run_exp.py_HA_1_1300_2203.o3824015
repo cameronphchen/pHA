@@ -1,0 +1,115 @@
+------------------------------
+i am running on node41.cluster
+started at Tue May 13 19:55:46 EDT 2014
+in /mnt/cd/ramadge/pohsuan/pHA/code
+by pohsuan
+via the command:
+pni_submit run_exp.py HA 1 1300 2203
+------------------------------
+.....*
+optimization finished, #iter = 824
+C = 0.000842
+obj = 0.029569, rho = -0.238428
+nSV = 141, nBSV = 10
+...*
+optimization finished, #iter = 544
+C = 0.000519
+obj = 0.016825, rho = -0.257725
+nSV = 119, nBSV = 27
+...*
+optimization finished, #iter = 519
+C = 0.000485
+obj = 0.015867, rho = -0.063231
+nSV = 123, nBSV = 26
+...*
+optimization finished, #iter = 463
+C = 0.000458
+obj = 0.014806, rho = -0.010783
+nSV = 114, nBSV = 27
+..*
+optimization finished, #iter = 390
+C = 0.000467
+obj = 0.013841, rho = 0.004248
+nSV = 111, nBSV = 35
+...*
+optimization finished, #iter = 516
+C = 0.000655
+obj = 0.021981, rho = 0.164721
+nSV = 123, nBSV = 22
+...*
+optimization finished, #iter = 564
+C = 0.000559
+obj = 0.018359, rho = -0.074213
+nSV = 124, nBSV = 26
+...*
+optimization finished, #iter = 460
+C = 0.000332
+obj = 0.010885, rho = 0.077084
+nSV = 120, nBSV = 30
+...*
+optimization finished, #iter = 455
+C = 0.000361
+obj = 0.011833, rho = 0.121375
+nSV = 116, nBSV = 28
+..*
+optimization finished, #iter = 414
+C = 0.000307
+obj = 0.009855, rho = 0.051321
+nSV = 113, nBSV = 34
+...*
+optimization finished, #iter = 458
+C = 0.000457
+obj = 0.015093, rho = 0.249526
+nSV = 124, nBSV = 29
+..*
+optimization finished, #iter = 332
+C = 0.000302
+obj = 0.009480, rho = 0.119529
+nSV = 105, nBSV = 43
+...*
+optimization finished, #iter = 434
+C = 0.000309
+obj = 0.009995, rho = 0.183046
+nSV = 112, nBSV = 30
+..*
+optimization finished, #iter = 383
+C = 0.000312
+obj = 0.010105, rho = 0.112348
+nSV = 109, nBSV = 39
+...*
+optimization finished, #iter = 561
+C = 0.000500
+obj = 0.016525, rho = 0.331019
+nSV = 118, nBSV = 28
+......*
+optimization finished, #iter = 905
+C = 0.001493
+obj = 0.053149, rho = 0.121572
+nSV = 142, nBSV = 6
+...*
+optimization finished, #iter = 520
+C = 0.000677
+obj = 0.021887, rho = -0.009992
+nSV = 125, nBSV = 22
+....*
+optimization finished, #iter = 585
+C = 0.000759
+obj = 0.025282, rho = 0.251790
+nSV = 132, nBSV = 19
+....*
+optimization finished, #iter = 643
+C = 0.000943
+obj = 0.032056, rho = -0.130739
+nSV = 126, nBSV = 12
+....*
+optimization finished, #iter = 617
+C = 0.000825
+obj = 0.028082, rho = 0.178342
+nSV = 129, nBSV = 15
+....*
+optimization finished, #iter = 676
+C = 0.000836
+obj = 0.028330, rho = 0.272606
+nSV = 133, nBSV = 13
+Total nSV = 496
+/var/spool/sge/node41/job_scripts/3824015: line 16:  5988 Segmentation fault      ./run_exp.py HA 1 1300 2203

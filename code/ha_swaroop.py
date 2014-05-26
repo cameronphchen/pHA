@@ -10,19 +10,23 @@ import numpy as np, scipy, random, sys, math, os
 from scipy import stats
 
 def HA_swaroop(movie_data, options, para, lrh):
-  sys.stdout.flush()
+
+  nvoxel = para['nvoxel']
+  nsubjs = para['nsubjs']
+  nTR    = para['nTR']  
 
   current_file = options['working_path']+'HA_'+lrh+'_'+str(para['nvoxel'])+'vx_current.npz' 
-  
+
+  movie_data_zscore = np.zeros ((nvoxel,nTR,nsubjs))
   for m in range(para['nsubjs']):
-    movie_data[:,:,m] = stats.zscore(movie_data[:,:,m].T ,axis=0, ddof=1).T
+    movie_data_zscore[:,:,m] = stats.zscore(movie_data[:,:,m].T ,axis=0, ddof=1).T
   
   if not os.path.exists(current_file):
     R = np.zeros((para['nvoxel'],para['nvoxel'],para['nsubjs']))
     G = np.zeros((para['nTR'],para['nvoxel']))
     for m in range(para['nsubjs']):
       R[:,:,m] = np.identity(para['nvoxel'])
-    G = movie_data[:,:,1].T
+    G = movie_data_zscore[:,:,1].T
     niter = 0
     np.savez_compressed(options['working_path']+'HA_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(niter)+'.npz',\
                       R = R, G = G, niter=niter)
@@ -39,9 +43,9 @@ def HA_swaroop(movie_data, options, para, lrh):
     print('.'),
     sys.stdout.flush()
     for m in range(para['nsubjs']):
-      U, s, V = np.linalg.svd(movie_data[:,:,m].dot(G), full_matrices=False) #USV^T = svd(X^TG)
+      U, s, V = np.linalg.svd(movie_data_zscore[:,:,m].dot(G), full_matrices=False) #USV^T = svd(X^TG)
       R[:,:,m] = U.dot(V) # R = UV^T
-      G = (G + stats.zscore(movie_data[:,:,m].T.dot(R[:,:,m]),axis=1, ddof=0) )/2 
+      G = (G + stats.zscore(movie_data_zscore[:,:,m].T.dot(R[:,:,m]),axis=1, ddof=0) )/2 
       G = stats.zscore(G ,axis=1, ddof=0)
 
   new_niter = niter + para['niter_unit']

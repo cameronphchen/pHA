@@ -11,25 +11,33 @@ from scipy import stats
 
 def HA(movie_data, options, para, lrh):
 
-  current_file = options['working_path']+'HA_'+lrh+'_'+str(para['nvoxel'])+'vx_current.npz' 
-  
+  nvoxel = para['nvoxel']
+  nsubjs = para['nsubjs']
+  nTR    = para['nTR']
+  align_algo = para['align_algo']
+ 
+  print align_algo,
+
+  current_file = options['working_path']+align_algo+'_'+lrh+'_'+str(para['nvoxel'])+'vx_current.npz' 
+
+  movie_data_zscore = np.zeros ((nvoxel,nTR,nsubjs))
   for m in range(para['nsubjs']):
-    movie_data[:,:,m] = stats.zscore(movie_data[:,:,m].T ,axis=0, ddof=1).T
+    movie_data_zscore[:,:,m] = stats.zscore(movie_data[:,:,m].T ,axis=0, ddof=1).T
   
   if not os.path.exists(current_file):
     R = np.zeros((para['nvoxel'],para['nvoxel'],para['nsubjs']))
     G = np.zeros((para['nTR'],para['nvoxel']))
     for m in range(para['nsubjs']):
       R[:,:,m] = np.identity(para['nvoxel'])
-      G = G + movie_data[:,:,m].T
+      G = G + movie_data_zscore[:,:,m].T
     G = G/para['nsubjs']
     niter = 0
-    np.savez_compressed(options['working_path']+'HA_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(niter)+'.npz',\
+    np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(niter)+'.npz',\
                       R = R, G = G, niter=niter)
   else:
     workspace = np.load(current_file)
     niter = workspace['niter']
-    workspace = np.load(options['working_path']+'HA_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(niter)+'.npz')
+    workspace = np.load(options['working_path']+align_algo+'_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(niter)+'.npz')
     R = workspace['R'] 
     G = workspace['G']
     niter = workspace['niter']
@@ -39,16 +47,16 @@ def HA(movie_data, options, para, lrh):
     print('.'),
     sys.stdout.flush()
     for m in range(para['nsubjs']):
-      G_tmp = G*para['nsubjs'] - movie_data[:,:,m].T.dot(R[:,:,m]) # G_tmp = G-XR
-      U, s, V = np.linalg.svd(movie_data[:,:,m].dot(G), full_matrices=False) #USV = svd(X^TG)
+      G_tmp = G*para['nsubjs'] - movie_data_zscore[:,:,m].T.dot(R[:,:,m]) # G_tmp = G-XR
+      U, s, V = np.linalg.svd(movie_data_zscore[:,:,m].dot(G), full_matrices=False) #USV = svd(X^TG)
       R[:,:,m] = U.dot(V) # R = UV^T
-      G = G_tmp + movie_data[:,:,m].T.dot(R[:,:,m]) #G = G_tmp + XR
+      G = G_tmp + movie_data_zscore[:,:,m].T.dot(R[:,:,m]) #G = G_tmp + XR
       G = G/para['nsubjs']
 
   new_niter = niter + para['niter_unit']
   np.savez_compressed(current_file, niter = new_niter)
   
-  np.savez_compressed(options['working_path']+'HA_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(new_niter)+'.npz',\
+  np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(new_niter)+'.npz',\
                       R = R, G = G, niter=new_niter)
   
   return new_niter

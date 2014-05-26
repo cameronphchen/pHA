@@ -35,6 +35,11 @@ Structure:
 
 =====================================
 
+May 17, 2014
+  1. Print out the result of sigma for pHA_EM, the number is weird. First, some times it shows up as negative number
+     , later iterations, the number becomes way too large, up to 1e+159. There must be a bug within the code
+     or within the equations
+
 May 13, 2014
   1. Reach benchmark performance 64% (align with Neuron result) with HA with both VT 1300 vx, 2203 TRs
 

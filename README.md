@@ -38,10 +38,10 @@ Structure:
 Experiment code:
 
   1.run_exp.py
-    -align on whole movie, test on image
+    *align on whole movie, test on image
 
   2.run_exp_img_align.py
-    -align on image test on image
+    *align on image test on image
 
   3.run_exp_img_align_loo.py
     -align on image with leave-one-out framework 

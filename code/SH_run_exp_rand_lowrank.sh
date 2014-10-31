@@ -1,0 +1,9 @@
+#!/bin/sh
+
+for rand in 0 1 2 3 4 #5 6 7 8 9  
+do
+  for lw in 50 100 500 1000 1300 
+  do 
+    submit_long run_exp.py pHA_EM_lowrank 10 1300 2203 $rand $lw
+  done
+done

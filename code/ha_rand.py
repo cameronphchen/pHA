@@ -6,16 +6,19 @@
 # movie_data[:,:,m] is the data for subject m, which will be X_m^T in the standard 
 # mathematic notation
 
+# using random orthgonoal matrix to initialize the transformation matrix
+# different from the heuristic way of using identity matrix
+# however, every subject specific transformation matrices are intialized with
+# the identical random transformation matrices
+
 import numpy as np, scipy, random, sys, math, os
 from scipy import stats
 
-def HA(movie_data, options, para, lrh):
+def HA_rand(movie_data, options, para, lrh):
   nvoxel = movie_data.shape[0]
   nTR    = movie_data.shape[1]
   nsubjs = movie_data.shape[2]
   align_algo = para['align_algo']
-  
-
 
   print align_algo,
   current_file = options['working_path']+align_algo+'_'+lrh+'_'+str(nvoxel)+'vx_current.npz' 
@@ -27,8 +30,12 @@ def HA(movie_data, options, para, lrh):
   if not os.path.exists(current_file):
     R = np.zeros((nvoxel,nvoxel,nsubjs))
     G = np.zeros((nTR,nvoxel))
+    ran_seed = para['ranNum']
+    random.seed(ran_seed)
+    A = np.mat(np.random.random((nvoxel,nvoxel)))
+    Q, R_qr = np.linalg.qr(A)
     for m in range(nsubjs):
-      R[:,:,m] = np.identity(nvoxel)
+      R[:,:,m] = Q
       G = G + movie_data_zscore[:,:,m].T
     G = G/float(nsubjs)
     niter = 0

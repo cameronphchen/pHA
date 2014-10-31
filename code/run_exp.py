@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 # this is the code that runs the whole type 1 experiment
-# for type 2 experiment, please refer to run_exp_loo.py
+# using movie data to learn alignment parameter and conduct classification on 
+# image data
+#
+# for type 2 (leave-one-out) experiment, please refer to run_exp_loo.py
 # 
 # this code run a specific alignment algorithm (align_algo) for (niter) rounds
 # with voxel selection algorithm selecting (nvoxel) amount of voxels
@@ -25,8 +28,12 @@ import random
 from libsvm.svmutil import *
 from scikits.learn.svm import NuSVC
 from ha import HA
+from ha_rand import HA_rand
 from ha_swaroop import HA_swaroop
 from pha_em import pHA_EM
+from pha_em_rand import pHA_EM_rand
+from pha_em_lowrank import pHA_EM_lowrank
+from spha_vi import spHA_VI
 import sys
 sys.path.append('/Users/ChimatChen/anaconda/python.app/Contents/lib/python2.7/site-packages/')
 
@@ -50,7 +57,7 @@ niter_unit = para['niter_unit']
 # load experiment options
 # rondo options
 options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data/input/', \
-           'working_path': '/mnt/cd/fastscratch/pohsuan/pHA/data/working/'+str(para['nTR'])+'TR/',\
+           'working_path': '/fastscratch/pohsuan/pHA/data/working/'+str(para['nTR'])+'TR/',\
            'output_path' : '/jukebox/ramadge/pohsuan/pHA/data/output/'+str(para['nTR'])+'TR/'}
 
 # local options
@@ -86,6 +93,11 @@ tst_label = label[504:560]
 trn_label = np.squeeze(np.asarray(trn_label))
 tst_label = np.squeeze(np.asarray(tst_label))
 
+if para['align_algo'] in ['pHA_EM_lowrank']:
+  para['ranNum']=int(sys.argv[5])
+  para['nfeature'] = int(sys.argv[6])
+  nfeature = para['nfeature']
+  options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
 
 # for niter/niter_unit round, each round the alignment algorithm will run niter_unit iterations
 for i in range(para['niter']/para['niter_unit']):
@@ -95,12 +107,24 @@ for i in range(para['niter']/para['niter_unit']):
   if para['align_algo'] in ['HA', 'HA_shuffle'] :
     new_niter_lh = HA(movie_data_lh, options, para, 'lh')
     new_niter_rh = HA(movie_data_rh, options, para, 'rh')
+  elif para['align_algo'] in ['HA_rand'] :
+    new_niter_lh = HA_rand(movie_data_lh, options, para, 'lh')
+    new_niter_rh = HA_rand(movie_data_rh, options, para, 'rh')
   elif para['align_algo'] in ['HA_swaroop','HA_swaroop_shuffle'] :
     new_niter_lh = HA_swaroop(movie_data_lh, options, para, 'lh')
     new_niter_rh = HA_swaroop(movie_data_rh, options, para, 'rh')
   elif para['align_algo'] in ['pHA_EM', 'pHA_EM_shuffle']:
     new_niter_lh = pHA_EM(movie_data_lh, options, para, 'lh')
     new_niter_rh = pHA_EM(movie_data_rh, options, para, 'rh')
+  elif para['align_algo'] in ['pHA_EM_rand']:
+    new_niter_lh = pHA_EM_rand(movie_data_lh, options, para, 'lh')
+    new_niter_rh = pHA_EM_rand(movie_data_rh, options, para, 'rh')
+  elif para['align_algo'] in ['pHA_EM_lowrank']:
+    new_niter_lh = pHA_EM_lowrank(movie_data_lh, options, para, 'lh')
+    new_niter_rh = pHA_EM_lowrank(movie_data_rh, options, para, 'rh')
+  elif 'spHA_VI' in para['align_algo'] :
+    new_niter_lh = spHA_VI(movie_data_lh, options, para, 'lh')
+    new_niter_rh = spHA_VI(movie_data_rh, options, para, 'rh')
   elif para['align_algo'] == 'None' :
     # without any alignment, set new_niter_lh and new_niter_rh=0, the corresponding transformation
     # matrices are identity matrices
@@ -116,12 +140,33 @@ for i in range(para['niter']/para['niter_unit']):
     workspace_lh = np.load(options['working_path']+para['align_algo']+'_lh_'+str(para['nvoxel'])+'vx_'+str(new_niter_lh)+'.npz')
     workspace_rh = np.load(options['working_path']+para['align_algo']+'_rh_'+str(para['nvoxel'])+'vx_'+str(new_niter_rh)+'.npz')
 
-  if para['align_algo'] in ['HA', 'HA_shuffle','HA_swaroop','HA_swaroop_shuffle'] :
+  if para['align_algo'] in ['HA', 'HA_shuffle','HA_swaroop','HA_swaroop_shuffle','HA_rand'] :
+    transformed_data = np.zeros((para['nvoxel']*2 ,56 ,para['nsubjs']))
+    tst_data = np.zeros(shape = (para['nvoxel']*2,56))
+    trn_data = np.zeros(shape = (para['nvoxel']*2,504))
+
     transform_lh = workspace_lh['R']
     transform_rh = workspace_rh['R']
-  elif para['align_algo'] in  ['pHA_EM', 'pHA_EM_shuffle'] :
+  #elif 'pHA_EM' in para['align_algo'] or 'pHA_EM_rand' in para['align_algo'] or 'spHA_VI' in para['align_algo']:
+  elif para['align_algo'] in ['pHA_EM', 'pHA_EM_rand','spHA_VI']:
+    transformed_data = np.zeros((para['nvoxel']*2 ,56 ,para['nsubjs']))
+    tst_data = np.zeros(shape = (para['nvoxel']*2,56))
+    trn_data = np.zeros(shape = (para['nvoxel']*2,504))
+ 
     transform_lh = np.zeros((nvoxel,nvoxel,nsubjs))
     transform_rh = np.zeros((nvoxel,nvoxel,nsubjs))
+    bW_lh = workspace_lh['bW']
+    bW_rh = workspace_rh['bW']
+    for m in range(nsubjs):
+      transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
+      transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
+  elif para['align_algo'] in [ 'pHA_EM_lowrank']:
+    transformed_data = np.zeros((nfeature*2 ,56 ,para['nsubjs']))
+    tst_data = np.zeros(shape = (nfeature*2,56))
+    trn_data = np.zeros(shape = (nfeature*2,504))
+
+    transform_lh = np.zeros((nvoxel,nfeature,nsubjs))
+    transform_rh = np.zeros((nvoxel,nfeature,nsubjs))
     bW_lh = workspace_lh['bW']
     bW_rh = workspace_rh['bW']
     for m in range(nsubjs):
@@ -137,7 +182,7 @@ for i in range(para['niter']/para['niter_unit']):
     print 'alignment algo not recognize'
 
   # classification
-  transformed_data = np.zeros((para['nvoxel']*2 ,56 ,para['nsubjs']))
+  #transformed_data = np.zeros((para['nvoxel']*2 ,56 ,para['nsubjs']))
 
   # transformed mkdg data with learned transformation matrices
   for m in range(para['nsubjs']):
@@ -145,8 +190,8 @@ for i in range(para['niter']/para['niter_unit']):
     trfed_rh_tmp = transform_rh[:,:,m].T.dot(mkdg_data_rh[:,:,m])
     transformed_data[:,:,m] = stats.zscore( np.vstack((trfed_lh_tmp,trfed_rh_tmp)).T ,axis=0, ddof=1).T
 
-  tst_data = np.zeros(shape = (para['nvoxel']*2,56))
-  trn_data = np.zeros(shape = (para['nvoxel']*2,504))
+  #tst_data = np.zeros(shape = (para['nvoxel']*2,56))
+  #trn_data = np.zeros(shape = (para['nvoxel']*2,504))
   accu = np.zeros(shape=10)
 
   for loo in range(para['nsubjs']):

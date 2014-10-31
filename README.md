@@ -34,7 +34,9 @@ Structure:
      "HPAL/code/compute_transformations" but in python
 
 =====================================
-experiment code:
+
+Experiment code:
+
   1.run_exp.py
     -align on whole movie, test on image
   2.run_exp_img_align.py
@@ -52,6 +54,7 @@ experiment code:
     -with loo framework
 
 run experiment in batch script:
+
   1.SH_run_exp_loo_rand.sh
   2.SH_run_exp_mysseg_loo_rand.sh
   3.SH_run_exp_mysseg_lowrank_rand.sh
@@ -60,6 +63,7 @@ run experiment in batch script:
   6.SH_run_exp_rand_lowrank.sh
 
 algorithm code:
+
   1.ha.py
     - standard implemntation of hyperalignment
     - identity initialization for transformation matrix
@@ -86,6 +90,7 @@ algorithm code:
       nvoxel by nvoxel random matrix
 
 plot code:
+
   1.plot_accuracy.py
   2.plot_accuracy_loo.py
   3.plot_accuracy_loo_rand.py

@@ -39,70 +39,99 @@ Experiment code:
 
   1.run_exp.py
     -align on whole movie, test on image
+
   2.run_exp_img_align.py
     -align on image test on image
+
   3.run_exp_img_align_loo.py
     -align on image with leave-one-out framework 
+
   4.run_exp_loo.py
     -align on whole movie, test on image, loo
+
   5.run_exp_mysseg.py
     -align on half movie, myster segment identification on another half movie
+
   6.run_exp_mysseg_img_align.py
     -align on image and myster segment on half movie
+
   7.run_exp_mysseg_loo.py
     -align on half movie, myster segment identification on another half movie
     -with loo framework
 
-run experiment in batch script:
+Run experiment in batch script:
 
   1.SH_run_exp_loo_rand.sh
+
   2.SH_run_exp_mysseg_loo_rand.sh
+
   3.SH_run_exp_mysseg_lowrank_rand.sh
+
   4.SH_run_exp_mysseg_rand.sh
+
   5.SH_run_exp_rand.sh
+
   6.SH_run_exp_rand_lowrank.sh
 
-algorithm code:
+
+Algorithm code:
 
   1.ha.py
     - standard implemntation of hyperalignment
     - identity initialization for transformation matrix
+
   2.ha_rand.py
     - standard implemntation of hyperalignment
     - random orthogonal initialization for transformation matrix    
     - random orthogonal is calculated with QR decomposition of 
       nvoxel by nvoxel random matrix
+
   3.ha_swaroop.py
     - hyperalignment with hack that's try to be as similar as 
       "HPAL/code/compute_transformations" but in python
+
   4.pha_em.py
     - constrained EM algorithm for probabilistic hyperalignment
     - identity initialization for transformation matrix
+
   5.pha_em_lowrank.py
     - constrained EM algorithm for probabilistic hyperalignment
     - random skinny matrix with orthonormal columns initialization 
       for transformation matrix
     - random skinny matrix is calculated with QR decomposition of 
       nvoxel by nfeature random matrix    
+
   6.pha_em_rand.py
     - constrained EM algorithm for probabilistic hyperalignment
     - random orthogonal is calculated with QR decomposition of 
       nvoxel by nvoxel random matrix
 
-plot code:
+Plot code:
 
   1.plot_accuracy.py
+
   2.plot_accuracy_loo.py
+
   3.plot_accuracy_loo_rand.py
+
   4.plot_accuracy_lowrank_rand.py
+
   5.plot_accuracy_mysseg.py
+
   6.plot_accuracy_mysseg_RHA.py
+
   7.plot_accuracy_mysseg_loo.py
+
   8.plot_accuracy_mysseg_loo_rand.py
+
   9.plot_accuracy_mysseg_lowrank_rand.py
+
   10.plot_accuracy_mysseg_rand.py
+
   11.plot_accuracy_rand.py
+
   12.plot_loglikelihood.py
+
   13.plot_noiselevel.py
 
 

@@ -29,6 +29,7 @@ from rha import RHA
 from ha_swaroop import HA_swaroop
 from pha_em import pHA_EM
 from pha_em_lowrank import pHA_EM_lowrank
+from pha_em_shift_lowrank import pHA_EM_shift_lowrank
 from ha_rand import HA_rand
 from pha_em_rand import pHA_EM_rand
 from spha_vi import spHA_VI
@@ -109,19 +110,22 @@ elif '2nd' in para['align_algo']:
     movie_data_rh_trn[:,:,m] = stats.zscore(movie_data_rh_2nd[:,:,m].T ,axis=0, ddof=1).T 
     movie_data_rh_tst[:,:,m] = stats.zscore(movie_data_rh_1st[:,:,m].T ,axis=0, ddof=1).T 
 
+  nfeature = nvoxel
 if 'pHA_EM_lowrank_mysseg' in para['align_algo'] :
   para['ranNum']=int(sys.argv[5])
   para['nfeature'] = int(sys.argv[6])
   nfeature = para['nfeature']
   options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
+elif 'pHA_EM_shift_lowrank_mysseg' in para['align_algo'] :
+  para['nfeature'] = int(sys.argv[5])
+  nfeature = para['nfeature']
+  options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/' 
 elif 'HA_rand_mysseg' in para['align_algo'] or 'pHA_EM_rand_mysseg' in para['align_algo']:
   para['ranNum'] = int(sys.argv[5])
   options['working_path'] = options['working_path'] + '/rand'+str(para['ranNum'])+'/'
 elif 'HAreg_mysseg' in para['align_algo'] :
   para['alpha']=float(sys.argv[5])
 
-if not 'pHA_EM_lowrank' in para['align_algo'] :
-  nfeature = nvoxel
 
 if not os.path.exists(options['working_path']):
   os.makedirs(options['working_path'])
@@ -150,6 +154,9 @@ for i in range(para['niter']/para['niter_unit']):
   elif 'pHA_EM_lowrank_mysseg' in para['align_algo'] :
     new_niter_lh = pHA_EM_lowrank(movie_data_lh_trn, options, para, 'lh')
     new_niter_rh = pHA_EM_lowrank(movie_data_rh_trn, options, para, 'rh')
+  elif 'pHA_EM_shift_lowrank_mysseg' in para['align_algo'] :
+    new_niter_lh = pHA_EM_shift_lowrank(movie_data_lh_trn, options, para, 'lh')
+    new_niter_rh = pHA_EM_shift_lowrank(movie_data_rh_trn, options, para, 'rh')
   elif 'spHA_VI' in para['align_algo'] :
     new_niter_lh = spHA_VI(movie_data_lh_trn, options, para, 'lh')
     new_niter_rh = spHA_VI(movie_data_rh_trn, options, para, 'rh')
@@ -183,7 +190,7 @@ for i in range(para['niter']/para['niter_unit']):
     for m in range(nsubjs):
       transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
       transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
-  elif 'pHA_EM_lowrank_mysseg' in para['align_algo']:
+  elif 'pHA_EM_lowrank_mysseg' in para['align_algo'] or 'pHA_EM_shift_lowrank_mysseg' in para['align_algo']:
     tst_data = np.zeros(shape = (nfeature*2,56))
     trn_data = np.zeros(shape = (nfeature*2,504))
     transform_lh = np.zeros((nvoxel,nfeature,nsubjs))

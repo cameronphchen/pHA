@@ -19,7 +19,6 @@ import sys
 para  = {'niter'     : int(sys.argv[1]),\
          'nvoxel'    : int(sys.argv[2]),\
          'nTR'       : int(sys.argv[3]),\
-         'nrand'     : int(sys.argv[4]),\
          'nsubjs'    : 10,\
          'niter_unit': 1 }
 
@@ -28,7 +27,6 @@ nvoxel     = para['nvoxel']
 nTR        = para['nTR']
 nsubjs     = para['nsubjs']
 niter_unit = para['niter_unit']
-nrand      = para['nrand']
 
 # load experiment options
 # rondo options
@@ -43,7 +41,7 @@ options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data/input/', \
 
 nfeature = [10,20,30,40,50,100,500,1000,1300]
 
-acc_pHA_EM_lowrank_all = np.zeros((nsubjs*nrand, niter/niter_unit, len(nfeature)))
+acc_pHA_EM_lowrank_all = np.zeros((nsubjs, niter/niter_unit, len(nfeature)))
 acc_pHA_EM_all = np.zeros((nsubjs, niter/niter_unit))
 
 for i in range(1,niter/niter_unit):
@@ -51,10 +49,9 @@ for i in range(1,niter/niter_unit):
   acc_pHA_EM_all[:,i] = ws_pha_em['accu']
   ws_pha_em.close()
   for k in range(len(nfeature)):
-    for rand in range(nrand):
-      ws_pha_em_lowrank = np.load(options['working_path']+ 'lowrank'+str(nfeature[k]) +'/rand'+str(rand)+'/acc_pHA_EM_lowrank_'+str(para['nvoxel'])+'vx_'+str(i)+'.npz')
-      acc_pHA_EM_lowrank_all[range(rand*nsubjs,(rand+1)*nsubjs),i,k] = ws_pha_em_lowrank['accu'] 
-      ws_pha_em_lowrank.close()
+    ws_pha_em_lowrank = np.load(options['working_path']+ 'lowrank'+str(nfeature[k]) +'/acc_pHA_EM_shift_lowrank_'+str(para['nvoxel'])+'vx_'+str(i)+'.npz')
+    acc_pHA_EM_lowrank_all[range(0,nsubjs),i,k] = ws_pha_em_lowrank['accu'] 
+    ws_pha_em_lowrank.close()
 
 ws_none = np.load(options['working_path']+'acc_None_'+str(para['nvoxel'])+'vx_0.npz')
 acc_None_mean = ws_none['accu'].mean(axis = 0)
@@ -69,8 +66,8 @@ acc_pHA_EM_se[0]   = acc_None_se
 
 # set font size
 font = {#'family' : 'normal',
-    'size'   : 10:conf q
-    }
+        'size'   : 10
+        }
 
 plt.rc('font', **font)
 
@@ -98,6 +95,6 @@ plt.ylim([0,0.8])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 plt.text(.12, .05, 'Image Classification', horizontalalignment='left', verticalalignment='bottom')
-plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
-plt.savefig(options['output_path']+'accuracy_lowrank_rand_'+str(para['nvoxel'])+'vx.eps', format='eps', dpi=1000,bbox_inches='tight')
+plt.text(.12, .01, 'Skinny Shift Matrices', horizontalalignment='left', verticalalignment='bottom')
+plt.savefig(options['output_path']+'accuracy_lowrank_shift_'+str(para['nvoxel'])+'vx.eps', format='eps', dpi=1000,bbox_inches='tight')
 

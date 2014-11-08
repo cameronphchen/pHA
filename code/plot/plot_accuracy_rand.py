@@ -83,7 +83,7 @@ acc_None_se   = acc_pHA_EM_se[0]
 
 # set font size
 font = {#'family' : 'normal',
-        'size'   : 15}
+        'size'   : 10}
 
 plt.rc('font', **font)
 
@@ -91,8 +91,10 @@ aspectratio=8
 
 # plot accuracy
 plt.figure()
-plt.errorbar(iter_range ,acc_HA_mean    ,acc_HA_se      , label="HA"      , markevery=2,linewidth=1, color='b', marker = 'o')
-plt.errorbar(iter_range ,acc_pHA_EM_mean,acc_pHA_EM_se  , label="pHA EM"  , markevery=2, linewidth=1, color='r', marker = 'D',linestyle='--', markersize=4)
+plt.errorbar(iter_range ,len(iter_range)*[0.639],\
+                         len(iter_range)*[0.022]          , label="Neuron HA "      , markevery=2, linewidth=2, color='k',linestyle='--')
+plt.errorbar(iter_range ,acc_HA_mean    ,acc_HA_se      , label="HA identity"      , markevery=2,linewidth=2, color='b', marker = 'o')
+plt.errorbar(iter_range ,acc_pHA_EM_mean,acc_pHA_EM_se  , label="pHA EM identity"  , markevery=2, linewidth=2, color='r', marker = 'D',linestyle='--', markersize=4)
 #plt.errorbar(iter_range ,len(iter_range)*[acc_None_mean],\
 #                         len(iter_range)*[acc_None_se]  , label="no align", markevery=2, linewidth=2, color='g', marker = '.')
 #plt.plot    (iter_range ,len(iter_range)*[0.1428]       , label="chance", markevery=2, linewidth=2, color='k',linestyle='--')
@@ -104,18 +106,20 @@ plt.errorbar(iter_range ,acc_pHA_EM_mean,acc_pHA_EM_se  , label="pHA EM"  , mark
 #plt.savefig(options['output_path']+'accuracy_'+str(para['nvoxel'])+'vx.eps', format='eps', dpi=1000,bbox_inches='tight')
 
 #plt.figure()
-plt.errorbar(iter_range ,acc_HA_rand_mean    ,acc_HA_rand_se    , label="HA rand"    , markevery=3,linewidth=1, color='c', marker = 'x')
-plt.errorbar(iter_range ,acc_pHA_EM_rand_mean,acc_pHA_EM_rand_se, label="pHA EM rand", markevery=3, linewidth=1, color='m', marker = 'x')
+plt.errorbar(iter_range ,acc_HA_rand_mean    ,acc_HA_rand_se    , label="HA rand"    , markevery=3,linewidth=2, color='c', marker = 'x')
+plt.errorbar(iter_range ,acc_pHA_EM_rand_mean,acc_pHA_EM_rand_se, label="pHA EM rand", markevery=3, linewidth=2, color='m', marker = 'x')
 
 plt.errorbar(iter_range ,len(iter_range)*[acc_None_mean],\
                          len(iter_range)*[acc_None_se]                , label="no align"      , markevery=2, linewidth=2, color='g', marker = '.')
-plt.plot    (iter_range ,len(iter_range)*[0.1428]                     , label="chance"        , markevery=2, linewidth=2, color='k',linestyle='--')
+plt.plot    (iter_range ,len(iter_range)*[0.1428]                     , label="chance"        , markevery=2, linewidth=3, color='k',linestyle=':')
 
 plt.xlabel('Iterations')
 plt.ylabel('Accuracy')
 plt.ylim([0,0.8])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
+plt.text(.12, .05, 'Image Classification', horizontalalignment='left', verticalalignment='bottom')
+plt.text(.12, .01, 'Square Random Matrices', horizontalalignment='left', verticalalignment='bottom')
 plt.savefig(options['output_path']+'accuracy_rand_'+str(para['nvoxel'])+'vx.eps', format='eps', dpi=1000,bbox_inches='tight')
 
 

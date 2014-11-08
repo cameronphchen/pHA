@@ -33,6 +33,7 @@ from ha_swaroop import HA_swaroop
 from pha_em import pHA_EM
 from pha_em_rand import pHA_EM_rand
 from pha_em_lowrank import pHA_EM_lowrank
+from pha_em_shift_lowrank import pHA_EM_shift_lowrank
 from spha_vi import spHA_VI
 import sys
 sys.path.append('/Users/ChimatChen/anaconda/python.app/Contents/lib/python2.7/site-packages/')
@@ -98,6 +99,13 @@ if para['align_algo'] in ['pHA_EM_lowrank']:
   para['nfeature'] = int(sys.argv[6])
   nfeature = para['nfeature']
   options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
+elif para['align_algo'] in ['pHA_EM_shift_lowrank']:
+  para['nfeature'] = int(sys.argv[5])
+  nfeature = para['nfeature']
+  options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/'
+
+
+
 
 # for niter/niter_unit round, each round the alignment algorithm will run niter_unit iterations
 for i in range(para['niter']/para['niter_unit']):
@@ -122,6 +130,9 @@ for i in range(para['niter']/para['niter_unit']):
   elif para['align_algo'] in ['pHA_EM_lowrank']:
     new_niter_lh = pHA_EM_lowrank(movie_data_lh, options, para, 'lh')
     new_niter_rh = pHA_EM_lowrank(movie_data_rh, options, para, 'rh')
+  elif para['align_algo'] in ['pHA_EM_shift_lowrank']:
+    new_niter_lh = pHA_EM_shift_lowrank(movie_data_lh, options, para, 'lh')
+    new_niter_rh = pHA_EM_shift_lowrank(movie_data_rh, options, para, 'rh')
   elif 'spHA_VI' in para['align_algo'] :
     new_niter_lh = spHA_VI(movie_data_lh, options, para, 'lh')
     new_niter_rh = spHA_VI(movie_data_rh, options, para, 'rh')
@@ -160,7 +171,7 @@ for i in range(para['niter']/para['niter_unit']):
     for m in range(nsubjs):
       transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
       transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
-  elif para['align_algo'] in [ 'pHA_EM_lowrank']:
+  elif para['align_algo'] in [ 'pHA_EM_lowrank', 'pHA_EM_shift_lowrank']:
     transformed_data = np.zeros((nfeature*2 ,56 ,para['nsubjs']))
     tst_data = np.zeros(shape = (nfeature*2,56))
     trn_data = np.zeros(shape = (nfeature*2,504))

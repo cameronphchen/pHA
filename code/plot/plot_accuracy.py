@@ -78,42 +78,44 @@ acc_None_se   = acc_pHA_EM_se[0]
 
 # set font size
 font = {#'family' : 'normal',
-        'size'   : 15}
+        'size'   : 10}
 
 plt.rc('font', **font)
 
-aspectratio=25
+aspectratio=8
 
 # plot accuracy
 plt.figure()
 plt.errorbar(iter_range ,len(iter_range)*[0.639],\
-                         len(iter_range)*[0.022]          , label="Neuron HA"      , markevery=2, linewidth=1, color='k',linestyle='-')
+                         len(iter_range)*[0.022]          , label="Neuron HA "      , markevery=2, linewidth=2, color='k',linestyle='--')
 plt.errorbar(iter_range ,acc_HA_mean    ,acc_HA_se      , label="HA"      , markevery=2,linewidth=2, color='b', marker = 'o')
 plt.errorbar(iter_range ,acc_pHA_EM_mean,acc_pHA_EM_se  , label="pHA EM"  , markevery=2, linewidth=2, color='r', marker = 'D',linestyle='--', markersize=7)
 plt.errorbar(iter_range ,len(iter_range)*[acc_None_mean],\
                          len(iter_range)*[acc_None_se]  , label="no align", markevery=2, linewidth=2, color='g', marker = '.')
-plt.plot    (iter_range ,len(iter_range)*[0.1428]       , label="chance", markevery=2, linewidth=2, color='k',linestyle='--')
+plt.plot    (iter_range ,len(iter_range)*[0.1428]       , label="chance", markevery=2, linewidth=3, color='k',linestyle=':')
 plt.xlabel('Iterations')
 plt.ylabel('Accuracy')
 plt.ylim([0,0.8])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
+plt.text(.12, .05, 'Image Classification', horizontalalignment='left', verticalalignment='bottom')
+plt.text(.12, .01, 'Square Identity Matrices', horizontalalignment='left', verticalalignment='bottom')
 plt.savefig(options['output_path']+'accuracy_'+str(para['nvoxel'])+'vx.eps', format='eps', dpi=1000,bbox_inches='tight')
 
-plt.figure()
-plt.errorbar(iter_range ,acc_HA_shuffle_mean    ,acc_HA_shuffle_se    , label="HA shuffle"    , markevery=2,linewidth=2, color='b', marker = 'o')
-plt.errorbar(iter_range ,acc_pHA_EM_shuffle_mean,acc_pHA_EM_shuffle_se, label="pHA EM shuffle", markevery=2, linewidth=2, color='r', marker = 'D',linestyle='--', markersize=7)
+#plt.figure()
+#plt.errorbar(iter_range ,acc_HA_shuffle_mean    ,acc_HA_shuffle_se    , label="HA shuffle"    , markevery=2,linewidth=2, color='b', marker = 'o')
+#plt.errorbar(iter_range ,acc_pHA_EM_shuffle_mean,acc_pHA_EM_shuffle_se, label="pHA EM shuffle", markevery=2, linewidth=2, color='r', marker = 'D',linestyle='--', markersize=7)
 
-plt.errorbar(iter_range ,len(iter_range)*[acc_None_mean],\
-                         len(iter_range)*[acc_None_se]                , label="no align"      , markevery=2, linewidth=2, color='g', marker = '.')
-plt.plot    (iter_range ,len(iter_range)*[0.1428]                     , label="chance"        , markevery=2, linewidth=2, color='k',linestyle='--')
+#plt.errorbar(iter_range ,len(iter_range)*[acc_None_mean],\
+#                         len(iter_range)*[acc_None_se]                , label="no align"      , markevery=2, linewidth=2, color='g', marker = '.')
+#plt.plot    (iter_range ,len(iter_range)*[0.1428]                     , label="chance"        , markevery=2, linewidth=2, color='k',linestyle='--')
 
-plt.xlabel('Iterations')
-plt.ylabel('Accuracy')
-plt.ylim([0,0.8])
-plt.axes().set_aspect(aspectratio)
-plt.legend(loc=4)
-plt.savefig(options['output_path']+'accuracy_shuffle_'+str(para['nvoxel'])+'vx.eps', format='eps', dpi=1000,bbox_inches='tight')
+#plt.xlabel('Iterations')
+#plt.ylabel('Accuracy')
+#plt.ylim([0,0.8])
+#plt.axes().set_aspect(aspectratio)
+#plt.legend(loc=4)
+#plt.savefig(options['output_path']+'accuracy_shuffle_'+str(para['nvoxel'])+'vx.eps', format='eps', dpi=1000,bbox_inches='tight')
 
 
 

@@ -43,6 +43,7 @@ para  = {'align_algo': sys.argv[1],\
          'nvoxel'    : int(sys.argv[3]),\
          'nTR'       : int(sys.argv[4]),\
          'nsubjs'    : 10,\
+         'win_size'  : 3,\
          'niter_unit': 1 }
 
 print para
@@ -53,7 +54,7 @@ nvoxel     = para['nvoxel']
 nTR        = para['nTR']
 nsubjs     = para['nsubjs']
 niter_unit = para['niter_unit']
-win_size   = 9 #TR
+win_size   = para['win_size']  #TR
 nseg       = nTR/2 - win_size
 # load experiment options
 # rondo options
@@ -62,7 +63,6 @@ options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data/input/', \
            'output_path' : '/jukebox/ramadge/pohsuan/pHA/data/output/'+str(para['nTR'])+'TR/'}
 #'working_path': '/fastscratch/pohsuan/pHA/data/working/'+str(para['nTR'])+'TR/'+'alpha'+sys.argv[5]+'/',\
 #'working_path': '/fastscratch/pohsuan/pHA/data/working/'+str(para['nTR'])+'TR/'+'rand'+str(para['ranNum'])+'/',\
-
 
 # local options
 #options = {'input_path'  : '/Volumes/ramadge/pohsuan/pHA/data/input/', \
@@ -110,7 +110,9 @@ elif '2nd' in para['align_algo']:
     movie_data_rh_trn[:,:,m] = stats.zscore(movie_data_rh_2nd[:,:,m].T ,axis=0, ddof=1).T 
     movie_data_rh_tst[:,:,m] = stats.zscore(movie_data_rh_1st[:,:,m].T ,axis=0, ddof=1).T 
 
-  nfeature = nvoxel
+options['working_path'] = options['working_path'] + 'winsize' + str(win_size) +'/';
+print  options['working_path'] 
+nfeature = nvoxel
 if 'pHA_EM_lowrank_mysseg' in para['align_algo'] :
   para['ranNum']=int(sys.argv[5])
   para['nfeature'] = int(sys.argv[6])

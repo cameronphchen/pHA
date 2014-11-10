@@ -43,7 +43,7 @@ para  = {'align_algo': sys.argv[1],\
          'nvoxel'    : int(sys.argv[3]),\
          'nTR'       : int(sys.argv[4]),\
          'nsubjs'    : 10,\
-         'win_size'  : 3,\
+         'win_size'  : 9,\
          'niter_unit': 1 }
 
 print para
@@ -113,7 +113,7 @@ elif '2nd' in para['align_algo']:
 options['working_path'] = options['working_path'] + 'winsize' + str(win_size) +'/';
 print  options['working_path'] 
 nfeature = nvoxel
-if 'pHA_EM_lowrank_mysseg' in para['align_algo'] :
+if 'pHA_EM_lowrank_mysseg' in para['align_algo'] or 'spHA_VI_mysseg' in para['align_algo']:
   para['ranNum']=int(sys.argv[5])
   para['nfeature'] = int(sys.argv[6])
   nfeature = para['nfeature']
@@ -159,7 +159,7 @@ for i in range(para['niter']/para['niter_unit']):
   elif 'pHA_EM_shift_lowrank_mysseg' in para['align_algo'] :
     new_niter_lh = pHA_EM_shift_lowrank(movie_data_lh_trn, options, para, 'lh')
     new_niter_rh = pHA_EM_shift_lowrank(movie_data_rh_trn, options, para, 'rh')
-  elif 'spHA_VI' in para['align_algo'] :
+  elif 'spHA_VI_mysseg' in para['align_algo'] :
     new_niter_lh = spHA_VI(movie_data_lh_trn, options, para, 'lh')
     new_niter_rh = spHA_VI(movie_data_rh_trn, options, para, 'rh')
   elif 'HAreg_mysseg' in para['align_algo'] :
@@ -184,7 +184,7 @@ for i in range(para['niter']/para['niter_unit']):
     transform_lh = workspace_lh['R']
     transform_rh = workspace_rh['R']
   elif 'pHA_EM_mysseg' in para['align_algo'] or 'pHA_EM_shuffle_mysseg' in  para['align_algo']\
-       or 'spHA_VI' in  para['align_algo'] or 'pHA_EM_rand_mysseg' in  para['align_algo']:
+        or 'pHA_EM_rand_mysseg' in  para['align_algo']:
     transform_lh = np.zeros((nvoxel,nvoxel,nsubjs))
     transform_rh = np.zeros((nvoxel,nvoxel,nsubjs))
     bW_lh = workspace_lh['bW']
@@ -192,7 +192,8 @@ for i in range(para['niter']/para['niter_unit']):
     for m in range(nsubjs):
       transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
       transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
-  elif 'pHA_EM_lowrank_mysseg' in para['align_algo'] or 'pHA_EM_shift_lowrank_mysseg' in para['align_algo']:
+  elif 'pHA_EM_lowrank_mysseg' in para['align_algo'] or 'pHA_EM_shift_lowrank_mysseg' in para['align_algo']\
+      or 'spHA_VI_mysseg' in  para['align_algo']:
     tst_data = np.zeros(shape = (nfeature*2,56))
     trn_data = np.zeros(shape = (nfeature*2,504))
     transform_lh = np.zeros((nvoxel,nfeature,nsubjs))

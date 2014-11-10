@@ -14,7 +14,7 @@
 # Sig_s : TR x TR x nvoxel
 
 # Hyperparameters:
-# W_m   : nvoxel x nvoxel x nsubjs
+# W_m   : nvoxel x nfeature x nsubjs
 # rho2  : nsubjs 
 # mu    : nvoxel*nsubj 
 
@@ -31,6 +31,11 @@ def spHA_VI(movie_data, options, para, lrh):
   nsubjs = movie_data.shape[2]
 
   align_algo = para['align_algo']
+  nfeature   = para['nfeature']
+  ran_seed   = para['ranNum']
+  
+  if not os.path.exists(options['working_path']):
+    os.makedirs(options['working_path'])
 
   current_file = options['working_path']+align_algo+'_'+lrh+'_'+str(nvoxel)+'vx_current.npz' 
   # zscore the data
@@ -40,35 +45,38 @@ def spHA_VI(movie_data, options, para, lrh):
 
   del movie_data
 
+  # prior
+  #bK_i   = np.identity((nvoxel,nvoxel))
+
+  kernel = pyGPs.cov.RBFard(1)
+  T_idx  = np.arange(nTR)
+  T_idx  = T_idx[:,None]
+  bK_i   = kernel.getCovMatrix(T_idx,T_idx,'train')
+
   # initialization when first time run the algorithm
   if not os.path.exists(current_file):
-    # prior
-    #bK_i   = np.identity((nvoxel,nvoxel))
-
-    kernel = pyGPs.cov.RBFard(1)
-    T_idx  = np.arange(nTR)
-    T_idx  = T_idx[:,None] 
-    bK_i   = kernel.getCovMatrix(T_idx,T_idx,'train')  
-
     # variational parameters
     #          --bmu_{\bs_1}^T--
     # bmu_s =  --bmu_{\bs_n}^T-- 
     #          --bmu_{\bs_N}^T--
-    ES  = np.zeros((nvoxel,nTR))
+    ES  = np.zeros((nfeature,nTR))
 
     # hyperparameters
-    bW      = np.zeros((nsubjs*nvoxel,nvoxel))
+    bW      = np.zeros((nsubjs*nvoxel,nfeature))
     bmu     = np.zeros(nvoxel*nsubjs)
     sigma2  = np.zeros(nsubjs)
     btheta  = kernel.hyp 
-  
+    random.seed(ran_seed)
+    A = np.mat(np.random.random((nvoxel,nfeature)))
+    Q, R_qr = np.linalg.qr(A) 
     for m in range(nsubjs):
-      bW[m*nvoxel:(m+1)*nvoxel,:] = np.identity(nvoxel) 
+      bW[m*nvoxel:(m+1)*nvoxel,:] = Q 
       bmu[m*nvoxel:(m+1)*nvoxel] = np.mean(bX[m*nvoxel:(m+1)*nvoxel,:],1)
       sigma2[m] = 1
 
       #initialize K
     niter = 0
+    print options['working_path']
     np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(niter)+'.npz',\
                                 bW = bW, bmu=bmu, sigma2=sigma2, ES=ES, btheta = btheta , niter=niter)
 
@@ -82,7 +90,7 @@ def spHA_VI(movie_data, options, para, lrh):
     sigma2 = workspace['sigma2']
     ES     = workspace['ES']
     niter  = workspace['niter']
-
+    btheta = workspace['btheta']
   # remove mean
   bX = bX - bX.mean(axis=1)[:,np.newaxis]
 
@@ -93,7 +101,7 @@ def spHA_VI(movie_data, options, para, lrh):
     Sig_si_sum = np.zeros((nTR,nTR))
     mumuT_sum  = np.zeros((nTR,nTR))
     tmp_log_det_Sigsi = 0
-    for i in range(nvoxel):
+    for i in range(nfeature):
       print i,
       sys.stdout.flush()
 
@@ -116,7 +124,7 @@ def spHA_VI(movie_data, options, para, lrh):
         tmp_WxWE = np.zeros((nTR,1))
         for k in range(nvoxel):
           tmp_WmkjEsj = np.zeros((nTR,1))
-          for j in range(nvoxel):
+          for j in range(nfeature):
             if j == i: continue
             tmp_WEST = bW[m*nvoxel+k,j]*ES[j,:].T
             tmp_WEST = tmp_WEST[:,None] 
@@ -128,23 +136,20 @@ def spHA_VI(movie_data, options, para, lrh):
       ES[i,:]   = (Sig_si.dot(tmp_sigma2WxWE)).T
       mumuT_sum += np.outer(ES[i,:],ES[i,:]) 
 
-    print m,
     for m in range(nsubjs):
       print('.'),
       sys.stdout.flush()
       Am = bX[m*nvoxel:(m+1)*nvoxel,:].dot(ES.T)
-      Um, sm, Vm = np.linalg.svd(Am+0.00001*np.eye(nvoxel))
+      Um, sm, Vm = np.linalg.svd(Am,full_matrices=0)
       bW[m*nvoxel:(m+1)*nvoxel,:] = Um.dot(Vm)
-      tmp_sigma2 = 0
-      for i in range(nvoxel):
-        tmp_sigma2 +=   np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bX[m*nvoxel:(m+1)*nvoxel,:])) \
+      tmp_sigma2 =   np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bX[m*nvoxel:(m+1)*nvoxel,:])) \
                     -2*np.trace(ES.T.dot(bW[m*nvoxel:(m+1)*nvoxel,:].T).dot(bX[m*nvoxel:(m+1)*nvoxel,:]))\
-                    +  np.trace(ES.dot(ES.T)) + tmp_sum_tr_Sig_si
+                    +np.trace(ES.dot(ES.T)) + tmp_sum_tr_Sig_si
       sigma2[m] = nTR / tmp_sigma2
 
     bK_i_inv = scipy.linalg.inv(bK_i) 
-    for l in range(len(betheta)):
-      btheta[l]+=-0.5*np.trace(bK_i_inv.dot(nvoxel*bK_i + mumuT_sum - bSig_si_sum).dot(bK_i_inv)\
+    for l in range(len(btheta)):
+      btheta[l]+=-0.5*np.trace(bK_i_inv.dot(bK_i + mumuT_sum - Sig_si_sum).dot(bK_i_inv)\
                           .dot( kernel.getDerMatrix( T_idx,T_idx, 'train',l ) ))
 
     new_niter = niter + para['niter_unit']
@@ -163,12 +168,12 @@ def spHA_VI(movie_data, options, para, lrh):
 
     tmp_muKmu = 0
     tmp_trKSig = 0
-    for i in range(nvoxel):
-      tmp_muKmu  += ES[i,:].T.dot(bK_i_inv).dot(E[i,:])
+    for i in range(nfeature):
+      tmp_muKmu  += ES[i,:].T.dot(bK_i_inv).dot(ES[i,:])
       tmp_trKSig += np.trace(bK_i_inv.dot(Sig_si_sum))
-
-    ELBO = nTR*nvoxel*np.sum(sigma2)/2 - tmp_2rho2XmTXm + tmp_rho2WmTXm - tmp_1over2rho2*np.trace(ES.T.dot(ES))\
-        -tmp_1over2rho2*Sig_si_sum -0.5*N*math.log(np.linalg.det(bK_i)) - 0.5*tmp_muKmu - 0.5*tmp_trKSig - 0.5*tmp_log_det_Sigsi
+    sign , logdet = np.linalg.slogdet(bK_i)
+    ELBO = nTR*nfeature*np.sum(sigma2)/2 - tmp_2rho2XmTXm + tmp_rho2WmTXm - tmp_1over2rho2*np.trace(ES.T.dot(ES))\
+        -tmp_1over2rho2*np.trace(Sig_si_sum)  - 0.5*tmp_muKmu - 0.5*tmp_trKSig - 0.5*tmp_log_det_Sigsi #-0.5*nfeature*sign*logdet
 
     print it,
     print ELBO

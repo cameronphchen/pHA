@@ -94,7 +94,7 @@ tst_label = label[504:560]
 trn_label = np.squeeze(np.asarray(trn_label))
 tst_label = np.squeeze(np.asarray(tst_label))
 
-if para['align_algo'] in ['pHA_EM_lowrank']:
+if para['align_algo'] in ['pHA_EM_lowrank', 'spHA_VI']:
   para['ranNum']=int(sys.argv[5])
   para['nfeature'] = int(sys.argv[6])
   nfeature = para['nfeature']
@@ -103,8 +103,6 @@ elif para['align_algo'] in ['pHA_EM_shift_lowrank']:
   para['nfeature'] = int(sys.argv[5])
   nfeature = para['nfeature']
   options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/'
-
-
 
 
 # for niter/niter_unit round, each round the alignment algorithm will run niter_unit iterations
@@ -133,7 +131,7 @@ for i in range(para['niter']/para['niter_unit']):
   elif para['align_algo'] in ['pHA_EM_shift_lowrank']:
     new_niter_lh = pHA_EM_shift_lowrank(movie_data_lh, options, para, 'lh')
     new_niter_rh = pHA_EM_shift_lowrank(movie_data_rh, options, para, 'rh')
-  elif 'spHA_VI' in para['align_algo'] :
+  elif para['align_algo'] in ['spHA_VI'] :
     new_niter_lh = spHA_VI(movie_data_lh, options, para, 'lh')
     new_niter_rh = spHA_VI(movie_data_rh, options, para, 'rh')
   elif para['align_algo'] == 'None' :

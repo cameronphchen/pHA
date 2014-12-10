@@ -113,7 +113,13 @@ elif '2nd' in para['align_algo']:
 options['working_path'] = options['working_path'] + 'winsize' + str(win_size) +'/';
 print  options['working_path'] 
 nfeature = nvoxel
-if 'pHA_EM_lowrank_mysseg' in para['align_algo'] or 'spHA_VI_mysseg' in para['align_algo']:
+if 'spHA_VI_mysseg' in para['align_algo']:
+  para['ranNum']=int(sys.argv[5])
+  para['nfeature'] = int(sys.argv[6])
+  para['kernel']   = sys.argv[7]
+  nfeature = para['nfeature']
+  options['working_path'] = options['working_path'] + para['kernel'] + '/' +'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
+elif 'pHA_EM_lowrank_mysseg' in para['align_algo']:
   para['ranNum']=int(sys.argv[5])
   para['nfeature'] = int(sys.argv[6])
   nfeature = para['nfeature']
@@ -132,10 +138,10 @@ elif 'HAreg_mysseg' in para['align_algo'] :
 if not os.path.exists(options['working_path']):
   os.makedirs(options['working_path'])
 
-if os.path.exists(options['working_path']+align_algo+'_lh_'+str(nvoxel)+'vx_current.npz'):
-  os.remove(options['working_path']+align_algo+'_lh_'+str(nvoxel)+'vx_current.npz')
-if os.path.exists(options['working_path']+align_algo+'_rh_'+str(nvoxel)+'vx_current.npz'):
-  os.remove(options['working_path']+align_algo+'_rh_'+str(nvoxel)+'vx_current.npz')
+#if os.path.exists(options['working_path']+align_algo+'_lh_'+str(nvoxel)+'vx_current.npz'):
+#  os.remove(options['working_path']+align_algo+'_lh_'+str(nvoxel)+'vx_current.npz')
+#if os.path.exists(options['working_path']+align_algo+'_rh_'+str(nvoxel)+'vx_current.npz'):
+#  os.remove(options['working_path']+align_algo+'_rh_'+str(nvoxel)+'vx_current.npz')
 
 # for niter/niter_unit round, each round the alignment algorithm will run niter_unit iterations
 for i in range(para['niter']/para['niter_unit']):

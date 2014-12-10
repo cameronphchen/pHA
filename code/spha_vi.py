@@ -48,9 +48,12 @@ def spHA_VI(movie_data, options, para, lrh):
   # prior
   #bK_i   = np.identity((nvoxel,nvoxel))
 
-  kernel = pyGPs.cov.RBFard(1)
+  #kernel = pyGPs.cov.RBFard(1) ## remember to modify the kernel in optimization objective function
+  kernel = pyGPs.cov.RQ() ## remember to modify the kernel in optimization objective function 
   T_idx  = np.arange(nTR)
   T_idx  = T_idx[:,None]
+  kernel.hyp = [random.random() for rr in range(len(kernel.hyp))]
+  btheta = kernel.hyp
   bK_i   = kernel.getCovMatrix(T_idx,T_idx,'train')
 
   # initialization when first time run the algorithm
@@ -113,7 +116,7 @@ def spHA_VI(movie_data, options, para, lrh):
       #tmp_log_det_Sigsi += math.log(np.linalg.det(Sig_si))
       sign , tmp_log_det_Sigsi = np.linalg.slogdet(Sig_si)
       if sign == -1:
-        print str(new_niter)+'th iteration, log sign negative'
+        print str(it)+'th iteration, log sign negative'
       Sig_si_sum += Sig_si
       tmp_sum_tr_Sig_si += np.trace(Sig_si)
       # calculate \bmu_{\bs_i}
@@ -147,10 +150,38 @@ def spHA_VI(movie_data, options, para, lrh):
                     +np.trace(ES.dot(ES.T)) + tmp_sum_tr_Sig_si
       sigma2[m] = nTR / tmp_sigma2
 
+    #### hyperparameter optimization  ###check whether there's any bug
+    def obj_func (btheta_opt):
+      kernel_opt = pyGPs.cov.RBFard(1);
+      kernel_opt.hyp = btheta_opt;
+      bK_i_opt   = kernel_opt.getCovMatrix(T_idx,T_idx,'train')
+      bK_i_opt_inv = scipy.linalg.inv(bK_i_opt)
+      sign_opt , logdet_opt = np.linalg.slogdet(bK_i_opt)
+      return 0.5*nfeature*sign_opt*logdet_opt + 0.5*np.trace(bK_i_opt_inv.dot(mumuT_sum+Sig_si_sum))
+
+    def obj_func_der (btheta_opt):
+      kernel_opt = pyGPs.cov.RBFard(1);
+      kernel_opt.hyp = btheta_opt;
+      bK_i_opt   = kernel_opt.getCovMatrix(T_idx,T_idx,'train')
+      bK_i_opt_inv = scipy.linalg.inv(bK_i_opt)
+      sign_opt , logdet_opt = np.linalg.slogdet(bK_i_opt)
+      return 0.5*np.trace(bK_i_opt_inv.dot(bK_i_opt + mumuT_sum - Sig_si_sum).dot(bK_i_opt_inv)\
+                          .dot( kernel.getDerMatrix(T_idx,T_idx,'train')))
+    
+    #btheta = scipy.optimize.minimize(obj_func, btheta)
+    # maximize elbo == minimize -elbo
+    btheta = scipy.optimize.fmin(obj_func, btheta, maxiter=10)
+    print btheta 
+    
+    #### original error code
+    #for l in range(len(btheta)):
+    #  btheta[l]+=-0.5*np.trace(bK_i_inv.dot(bK_i + mumuT_sum - Sig_si_sum).dot(bK_i_inv)\
+    #                      .dot( kernel.getDerMatrix( T_idx,T_idx, 'train',l ) ))
+
+    ##### ADDED LINE TO MODIFY KERNEL HYPERPARAMETER
+    kernel.hyp = btheta;
+    bK_i   = kernel.getCovMatrix(T_idx,T_idx,'train')
     bK_i_inv = scipy.linalg.inv(bK_i) 
-    for l in range(len(btheta)):
-      btheta[l]+=-0.5*np.trace(bK_i_inv.dot(bK_i + mumuT_sum - Sig_si_sum).dot(bK_i_inv)\
-                          .dot( kernel.getDerMatrix( T_idx,T_idx, 'train',l ) ))
 
     new_niter = niter + para['niter_unit']
     np.savez_compressed(current_file, niter = new_niter)  
@@ -175,8 +206,7 @@ def spHA_VI(movie_data, options, para, lrh):
     ELBO = nTR*nfeature*np.sum(sigma2)/2 - tmp_2rho2XmTXm + tmp_rho2WmTXm - tmp_1over2rho2*np.trace(ES.T.dot(ES))\
         -tmp_1over2rho2*np.trace(Sig_si_sum)  - 0.5*tmp_muKmu - 0.5*tmp_trKSig - 0.5*tmp_log_det_Sigsi #-0.5*nfeature*sign*logdet
 
-    print it,
-    print ELBO
+    print 'ELBO'+str(ELBO)
 
     np.savez_compressed(options['output_path']+align_algo+'_'+'elbo_'+lrh+'_'+str(nvoxel)+'vx_'+str(new_niter)+'.npz',\
                    ELBO=ELBO)

@@ -115,7 +115,8 @@ no_align_se   = acc_no_align.std(axis = 0)/math.sqrt(nsubjs)
 #                     0          1          2          3         4        5         6         7          8          9         10           11            
 #name = np.array(('No\nAlignment','HA\nIdentity','HA\nRandom','pHA\nIdentity','pHA 10\nRandom','pHA 50\nRandom','pHA 100\nRandom',
 #                  'pHA 500\nRandom','pHA 1000\nRandom','pHA 1300\nRandom','Neuron HA','Neuron\nAnatomical'))
-name = np.array(('pHA$_{v0}$\nf=10','pHA$_{v0}$\nf=50','pHA$_{v0}$\nf=100','pHA$_{v0}$\nf=500','Haxby, 2011\n(HA)','Haxby, 2011\n(anatomical)'))
+# name = np.array(('pHA$_{v0}$\nf=10','pHA$_{v0}$\nf=50','pHA$_{v0}$\nf=100','pHA$_{v0}$\nf=500','Haxby, 2011\n(HA)','Haxby, 2011\n(anatomical)'))
+name = np.array(('pHA\nf=10','pHA\nf=50','pHA\nf=100','pHA\nf=500','Haxby, 2011\n(HA)','Haxby, 2011\n(anatomical)'))
 idx = range(len(name))
 
 all_mean = np.zeros(len(name))
@@ -167,12 +168,12 @@ all_se[5]=  0.025
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 11}
+        'size'   : 10}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-aspectratio=4
+aspectratio=6
 
 plt.figure()
 #opacity = 0
@@ -192,7 +193,9 @@ plt.xlim([-0.6,5.6])
 plt.ylim([0,1])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
-plt.text(1.5, 0.93, 'Movie Segment Identification', horizontalalignment='left', verticalalignment='bottom')
+#plt.text(1.5, 0.93, 'Movie Segment Identification', horizontalalignment='left', verticalalignment='bottom')
+plt.title('Movie Segment Identification')
+
 def autolabel(rects):
     # attach some text labels
     for rect in rects:

@@ -157,7 +157,7 @@ for i in range(para['niter']/para['niter_unit']):
     transform_lh = workspace_lh['R']
     transform_rh = workspace_rh['R']
   #elif 'pHA_EM' in para['align_algo'] or 'pHA_EM_rand' in para['align_algo'] or 'spHA_VI' in para['align_algo']:
-  elif para['align_algo'] in ['pHA_EM', 'pHA_EM_rand','spHA_VI']:
+  elif para['align_algo'] in ['pHA_EM', 'pHA_EM_rand']:
     transformed_data = np.zeros((para['nvoxel']*2 ,56 ,para['nsubjs']))
     tst_data = np.zeros(shape = (para['nvoxel']*2,56))
     trn_data = np.zeros(shape = (para['nvoxel']*2,504))
@@ -169,7 +169,7 @@ for i in range(para['niter']/para['niter_unit']):
     for m in range(nsubjs):
       transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
       transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
-  elif para['align_algo'] in [ 'pHA_EM_lowrank', 'pHA_EM_shift_lowrank']:
+  elif para['align_algo'] in [ 'pHA_EM_lowrank', 'pHA_EM_shift_lowrank','spHA_VI']:
     transformed_data = np.zeros((nfeature*2 ,56 ,para['nsubjs']))
     tst_data = np.zeros(shape = (nfeature*2,56))
     trn_data = np.zeros(shape = (nfeature*2,504))

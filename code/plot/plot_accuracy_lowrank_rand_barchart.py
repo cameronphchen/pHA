@@ -43,7 +43,8 @@ acc_HA_rand_all        = np.zeros((nsubjs*nrand, 1))
 acc_pHA_EM_all         = np.zeros((nsubjs, 1))
 acc_pHA_EM_lowrank_all = np.zeros((nsubjs*nrand, len(nfeature)))
 acc_no_align           = np.zeros((nsubjs*nrand, 1))
-
+acc_pPCA               = np.zeros((nsubjs, len(nfeature)))
+acc_pICA               = np.zeros((nsubjs, len(nfeature)))
 #taking the ith iteration
 i = 8
 
@@ -83,6 +84,23 @@ for k in range(len(nfeature)):
 acc_pHA_EM_lowrank_mean = acc_pHA_EM_lowrank_all.mean(axis = 0)
 acc_pHA_EM_lowrank_se   = acc_pHA_EM_lowrank_all.std(axis = 0)/math.sqrt(nsubjs)
 
+#pca
+for k in range(len(nfeature)):
+  ws_pca =  np.load(options['working_path']+ '/lowrank'+str(nfeature[k]) +\
+                                  '/acc_pPCA_'+str(para['nvoxel'])+'vx_1.npz')
+  acc_pPCA[:,k]        = ws_pca['accu']
+acc_pPCA_mean = acc_pPCA.mean(axis=0).tolist()
+acc_pPCA_se   = acc_pPCA.std(axis = 0)/math.sqrt(nsubjs)
+
+
+#ica
+for k in range(len(nfeature)):
+  ws_ica =  np.load(options['working_path']+ '/lowrank'+str(nfeature[k]) +\
+                                  '/acc_pICA_'+str(para['nvoxel'])+'vx_1.npz')
+  acc_pICA[:,k]        = ws_ica['accu']
+acc_pICA_mean = acc_pICA.mean(axis=0).tolist()
+acc_pICA_se   = acc_pICA.std(axis = 0)/math.sqrt(nsubjs)
+
 # no alignment
 ws_none = np.load(options['working_path']+'acc_None_'+str(para['nvoxel'])+'vx_0.npz')
 for rand in range(nrand):
@@ -93,7 +111,7 @@ no_align_se   = acc_no_align.std(axis = 0)/math.sqrt(nsubjs)
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 10}
+        'size'   : 5}
 
 plt.rc('font', **font)
 
@@ -105,81 +123,107 @@ aspectratio=6
 #acc_pHA_EM_all         = np.zeros((nsubjs*2, 1))
 #acc_pHA_EM_lowrank_all = np.zeros((2*nsubjs*nrand, len(nfeature)))
 #acc_no_align           = np.zeros((2*nsubjs*nrand, 1))
-#                     0          1          2          3         4        5         6         7          8          9         10           11            
 #name = np.array(('No\nAlignment','HA\nIdentity','HA\nRandom','pHA\nIdentity','pHA 10\nRandom','pHA 50\nRandom','pHA 100\nRandom',
 #                  'pHA 500\nRandom','pHA 1000\nRandom','pHA 1300\nRandom','Neuron HA','Neuron\nAnatomical', 'Within\nSubject'))
-name = np.array(('pHA\nf=10','pHA\nf=50','pHA\nf=100','pHA\nf=500','Haxby, 2011\n(HA)','Haxby, 2011\n(anatomical)'))
+name = np.array(('No\nAlignment','HA\nIdentity','HA\nRandom','pHA\nIdentity','pHA 10\nRandom',
+                 'pHA 50\nRandom','pHA 100\nRandom','pHA 500\nRandom','pHA 1000\nRandom','pHA 1300\nRandom',
+                 'Neuron HA','Neuron\nAnatomical','Within\nSubject','PCA 10','PCA 50','PCA 100',
+                 'PCA 500','PCA 1000','PCA 1300','ICA 10','ICA 50',
+                 'ICA 100','ICA 500', 'ICA 1000', 'ICA 1300'))
+#name = np.array(('pHA\nf=10','pHA\nf=50','pHA\nf=100','pHA\nf=500','Haxby, 2011\n(HA)','Haxby, 2011\n(anatomical)'))
 idx = range(len(name))
 
 all_mean = np.zeros(len(name))
 all_se = np.zeros(len(name))
 
-all_mean[0] = acc_pHA_EM_lowrank_mean[0]
-all_mean[1] = acc_pHA_EM_lowrank_mean[1]
-all_mean[2] = acc_pHA_EM_lowrank_mean[2]
-all_mean[3] = acc_pHA_EM_lowrank_mean[3]
-all_mean[4] = 0.639
-all_mean[5]=  0.446
+#all_mean[0] = acc_pHA_EM_lowrank_mean[0]
+#all_mean[1] = acc_pHA_EM_lowrank_mean[1]
+#all_mean[2] = acc_pHA_EM_lowrank_mean[2]
+#all_mean[3] = acc_pHA_EM_lowrank_mean[3]
+#all_mean[4] = 0.639
+#all_mean[5]=  0.446
 
-all_se[0] = acc_pHA_EM_lowrank_se[0]
-all_se[1] = acc_pHA_EM_lowrank_se[1]
-all_se[2] = acc_pHA_EM_lowrank_se[2]
-all_se[3] = acc_pHA_EM_lowrank_se[3]
-all_se[4] = 0.022
-all_se[5]=  0.014
+#all_se[0] = acc_pHA_EM_lowrank_se[0]
+#all_se[1] = acc_pHA_EM_lowrank_se[1]
+#all_se[2] = acc_pHA_EM_lowrank_se[2]
+#all_se[3] = acc_pHA_EM_lowrank_se[3]
+#all_se[4] = 0.022
+#all_se[5]=  0.014
 
-#all_mean = np.zeros((len(name)))
-#all_mean[0] = no_align_mean[0]
-#all_mean[1] = acc_HA_mean[0] 
-#all_mean[2] = acc_HA_rand_mean[0]
-#all_mean[3] = acc_pHA_EM_mean[0]
-#all_mean[4] = acc_pHA_EM_lowrank_mean[0]
-#all_mean[5] = acc_pHA_EM_lowrank_mean[1]
-#all_mean[6] = acc_pHA_EM_lowrank_mean[2]
-#all_mean[7] = acc_pHA_EM_lowrank_mean[3]
-#all_mean[8] = acc_pHA_EM_lowrank_mean[4]
-#all_mean[9] = acc_pHA_EM_lowrank_mean[5] 
-#all_mean[10] = 0.639
-#all_mean[11]=  0.446 
-#all_mean[12]=  0.632 
+all_mean = np.zeros((len(name)))
+all_mean[0] = no_align_mean[0]
+all_mean[1] = acc_HA_mean[0] 
+all_mean[2] = acc_HA_rand_mean[0]
+all_mean[3] = acc_pHA_EM_mean[0]
+all_mean[4] = acc_pHA_EM_lowrank_mean[0]
+all_mean[5] = acc_pHA_EM_lowrank_mean[1]
+all_mean[6] = acc_pHA_EM_lowrank_mean[2]
+all_mean[7] = acc_pHA_EM_lowrank_mean[3]
+all_mean[8] = acc_pHA_EM_lowrank_mean[4]
+all_mean[9] = acc_pHA_EM_lowrank_mean[5] 
+all_mean[10] = 0.639
+all_mean[11]=  0.446 
+all_mean[12]=  0.632 
+all_mean[13]=  acc_pPCA_mean[0]
+all_mean[14]=  acc_pPCA_mean[1]
+all_mean[15]=  acc_pPCA_mean[2]
+all_mean[16]=  acc_pPCA_mean[3]
+all_mean[17]=  acc_pPCA_mean[4]
+all_mean[18]=  acc_pPCA_mean[5]
+all_mean[19]=  acc_pICA_mean[0]
+all_mean[20]=  acc_pICA_mean[1]
+all_mean[21]=  acc_pICA_mean[2]
+all_mean[22]=  acc_pICA_mean[3]
+all_mean[23]=  acc_pICA_mean[4]
+all_mean[24]=  acc_pICA_mean[5]
 
-#all_se   = np.zeros((len(name)))
-#all_se[0] = no_align_se[0]
-#all_se[1] = acc_HA_se [0]
-#all_se[2] = acc_HA_rand_se[0] 
-#all_se[3] = acc_pHA_EM_se[0]
-#all_se[4] = acc_pHA_EM_lowrank_se[0]
-#all_se[5] = acc_pHA_EM_lowrank_se[1]
-#all_se[6] = acc_pHA_EM_lowrank_se[2]
-#all_se[7] = acc_pHA_EM_lowrank_se[3]
-#all_se[8] = acc_pHA_EM_lowrank_se[4]
-#all_se[9] = acc_pHA_EM_lowrank_se[5] 
-#all_se[10]= 0.022
-#all_se[11]= 0.014
-#all_se[12]= 0.021
-
+all_se   = np.zeros((len(name)))
+all_se[0] = no_align_se[0]
+all_se[1] = acc_HA_se [0]
+all_se[2] = acc_HA_rand_se[0] 
+all_se[3] = acc_pHA_EM_se[0]
+all_se[4] = acc_pHA_EM_lowrank_se[0]
+all_se[5] = acc_pHA_EM_lowrank_se[1]
+all_se[6] = acc_pHA_EM_lowrank_se[2]
+all_se[7] = acc_pHA_EM_lowrank_se[3]
+all_se[8] = acc_pHA_EM_lowrank_se[4]
+all_se[9] = acc_pHA_EM_lowrank_se[5] 
+all_se[10]= 0.022
+all_se[11]= 0.014
+all_se[12]= 0.021
+all_se[13]=  acc_pPCA_se[0]
+all_se[14]=  acc_pPCA_se[1]
+all_se[15]=  acc_pPCA_se[2]
+all_se[16]=  acc_pPCA_se[3]
+all_se[17]=  acc_pPCA_se[4]
+all_se[18]=  acc_pPCA_se[5]
+all_se[19]=  acc_pICA_se[0]
+all_se[20]=  acc_pICA_se[1]
+all_se[21]=  acc_pICA_se[2]
+all_se[22]=  acc_pICA_se[3]
+all_se[23]=  acc_pICA_se[4]
+all_se[24]=  acc_pICA_se[5]
   
 plt.figure()
 bar_width= 0.1
 opacity = 0.4
 error_config = {'ecolor': '0'}
 rects = plt.bar(idx, all_mean,yerr=all_se, align='center', color='b', alpha=opacity, error_kw=error_config)
-rects[0].set_color('b')
-rects[1].set_color('r')
-rects[2].set_color('b')
-rects[3].set_color('b')
-rects[4].set_color('c')
-rects[5].set_color('c')
-plt.xticks(idx, name)
+#rects[0].set_color('b')
+#rects[1].set_color('r')
+#rects[2].set_color('b')
+#rects[3].set_color('b')
+#rects[4].set_color('c')
+#rects[5].set_color('c')
+plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 #plt.xlabel('Alignment Methods')
-plt.xlim([-0.6,5.6])
+#plt.xlim([-0.6,5.6])
 plt.ylim([0,1])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 plt.title('Image Classification')
 #plt.text(1.5, 0.93, 'Image Classification', horizontalalignment='left', verticalalignment='bottom')
-
 def autolabel(rects):
     # attach some text labels
     for rect in rects:

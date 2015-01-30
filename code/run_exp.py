@@ -35,8 +35,12 @@ from pha_em_rand import pHA_EM_rand
 from pha_em_lowrank import pHA_EM_lowrank
 from pha_em_shift_lowrank import pHA_EM_shift_lowrank
 from spha_vi import spHA_VI
+from ppca import pPCA
+from pica import pICA
+from ha_sm_newton import HA_SM_Newton
+from ha_sm_retraction import HA_SM_Retraction
 import sys
-sys.path.append('/Users/ChimatChen/anaconda/python.app/Contents/lib/python2.7/site-packages/')
+sys.path.append('/usr/local/epd-7.1-2-rh5-x86_64/lib/python2.7/site-packages/libsvm')
 
 
 # load experiment parameters
@@ -48,7 +52,7 @@ para  = {'align_algo': sys.argv[1],\
          'niter_unit': 1 }
 
 print para
-
+align_algo = para['align_algo']
 niter      = para['niter']
 nvoxel     = para['nvoxel']
 nTR        = para['nTR']
@@ -94,16 +98,43 @@ tst_label = label[504:560]
 trn_label = np.squeeze(np.asarray(trn_label))
 tst_label = np.squeeze(np.asarray(tst_label))
 
-if para['align_algo'] in ['pHA_EM_lowrank', 'spHA_VI']:
+#if para['align_algo'] in ['pHA_EM_lowrank', 'spHA_VI']:
+#  para['ranNum']=int(sys.argv[5])
+#  para['nfeature'] = int(sys.argv[6])
+#  nfeature = para['nfeature']
+#  options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
+#elif para['align_algo'] in ['pHA_EM_shift_lowrank']:
+#  para['nfeature'] = int(sys.argv[5])
+#  nfeature = para['nfeature']
+#  options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/'
+nfeature = nvoxel
+if 'spHA_VI' in para['align_algo']:
+  para['ranNum']=int(sys.argv[5])
+  para['nfeature'] = int(sys.argv[6])
+  para['kernel']   = sys.argv[7]
+  nfeature = para['nfeature']
+  options['working_path'] = options['working_path'] + para['kernel'] + '/' +'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
+elif 'pHA_EM_lowrank' in para['align_algo'] or 'HA_SM_Newton' in para['align_algo'] or 'HA_SM_Retraction' in para['align_algo']:
   para['ranNum']=int(sys.argv[5])
   para['nfeature'] = int(sys.argv[6])
   nfeature = para['nfeature']
   options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
-elif para['align_algo'] in ['pHA_EM_shift_lowrank']:
+elif 'pHA_EM_shift_lowrank' in para['align_algo'] :
+  para['nfeature'] = int(sys.argv[5])
+  nfeature = para['nfeature']
+  options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/'
+elif 'HA_rand' in para['align_algo'] or 'pHA_EM_rand' in para['align_algo']:
+  para['ranNum'] = int(sys.argv[5])
+  options['working_path'] = options['working_path'] + '/rand'+str(para['ranNum'])+'/'
+elif 'HAreg' in para['align_algo'] :
+  para['alpha']=float(sys.argv[5])
+elif 'pPCA'  in para['align_algo'] or 'pICA' in para['align_algo'] :
   para['nfeature'] = int(sys.argv[5])
   nfeature = para['nfeature']
   options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/'
 
+if not os.path.exists(options['working_path']):
+  os.makedirs(options['working_path'])
 
 # for niter/niter_unit round, each round the alignment algorithm will run niter_unit iterations
 for i in range(para['niter']/para['niter_unit']):
@@ -119,6 +150,12 @@ for i in range(para['niter']/para['niter_unit']):
   elif para['align_algo'] in ['HA_swaroop','HA_swaroop_shuffle'] :
     new_niter_lh = HA_swaroop(movie_data_lh, options, para, 'lh')
     new_niter_rh = HA_swaroop(movie_data_rh, options, para, 'rh')
+  elif para['align_algo'] in ['HA_SM_Newton'] :
+    new_niter_lh = HA_SM_Newton(movie_data_lh, options, para, 'lh')
+    new_niter_rh = HA_SM_Newton(movie_data_rh, options, para, 'rh')
+  elif para['align_algo'] in ['HA_SM_Retraction'] :
+    new_niter_lh = HA_SM_Retraction(movie_data_lh, options, para, 'lh')
+    new_niter_rh = HA_SM_Retraction(movie_data_rh, options, para, 'rh')
   elif para['align_algo'] in ['pHA_EM', 'pHA_EM_shuffle']:
     new_niter_lh = pHA_EM(movie_data_lh, options, para, 'lh')
     new_niter_rh = pHA_EM(movie_data_rh, options, para, 'rh')
@@ -134,6 +171,12 @@ for i in range(para['niter']/para['niter_unit']):
   elif para['align_algo'] in ['spHA_VI'] :
     new_niter_lh = spHA_VI(movie_data_lh, options, para, 'lh')
     new_niter_rh = spHA_VI(movie_data_rh, options, para, 'rh')
+  elif para['align_algo'] in ['pPCA']:
+    new_niter_lh = pPCA(movie_data_lh, options, para, 'lh')
+    new_niter_rh = pPCA(movie_data_rh, options, para, 'rh')
+  elif para['align_algo'] in ['pICA']:
+    new_niter_lh = pICA(movie_data_lh, options, para, 'lh')
+    new_niter_rh = pICA(movie_data_rh, options, para, 'rh')
   elif para['align_algo'] == 'None' :
     # without any alignment, set new_niter_lh and new_niter_rh=0, the corresponding transformation
     # matrices are identity matrices
@@ -181,6 +224,28 @@ for i in range(para['niter']/para['niter_unit']):
     for m in range(nsubjs):
       transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
       transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
+  elif 'pPCA' in  para['align_algo'] or 'pICA' in para['align_algo']:
+    transformed_data = np.zeros((nfeature*2 ,56 ,para['nsubjs']))
+    tst_data = np.zeros(shape = (nfeature*2,56))
+    trn_data = np.zeros(shape = (nfeature*2,504))
+    transform_lh = np.zeros((nvoxel,nfeature,nsubjs))
+    transform_rh = np.zeros((nvoxel,nfeature,nsubjs))
+    bW_lh = workspace_lh['R']
+    bW_rh = workspace_rh['R']
+    for m in range(nsubjs):
+      transform_lh[:,:,m] = bW_lh
+      transform_rh[:,:,m] = bW_rh
+  elif 'HA_SM_Newton' in  para['align_algo'] or 'HA_SM_Retraction' in para['align_algo']:
+    transformed_data = np.zeros((nfeature*2 ,56 ,para['nsubjs']))
+    tst_data = np.zeros(shape = (nfeature*2,56))
+    trn_data = np.zeros(shape = (nfeature*2,504))
+    transform_lh = np.zeros((nvoxel,nfeature,nsubjs))
+    transform_rh = np.zeros((nvoxel,nfeature,nsubjs))
+    bW_lh = workspace_lh['W']
+    bW_rh = workspace_rh['W']
+    for m in range(nsubjs):
+      transform_lh[:,:,m] = bW_lh[:,:,m]
+      transform_rh[:,:,m] = bW_rh[:,:,m]
   elif para['align_algo'] == 'None' :
     transform_lh = np.zeros((nvoxel,nvoxel,nsubjs))
     transform_rh = np.zeros((nvoxel,nvoxel,nsubjs))

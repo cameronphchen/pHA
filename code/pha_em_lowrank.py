@@ -45,7 +45,7 @@ def pHA_EM_lowrank(movie_data, options, para, lrh):
     bmu    = np.zeros(nvoxel*nsubjs)
     sigma2  = np.zeros(nsubjs)
     ES     = np.zeros((nfeature,nTR)) 
-    random.seed(ran_seed)
+    np.random.seed(ran_seed)
     A = np.mat(np.random.random((nvoxel,nfeature)))
     Q, R_qr = np.linalg.qr(A)
     for m in range(nsubjs):
@@ -75,7 +75,7 @@ def pHA_EM_lowrank(movie_data, options, para, lrh):
   for i in range(para['niter_unit']):
     print('.'),
     sys.stdout.flush()
-    
+
     bSig_x = np.zeros((nvoxel*nsubjs,nvoxel*nsubjs))
     bSig_x = bW.dot(bSig_s).dot(bW.T)
     for m in range(nsubjs):
@@ -86,7 +86,7 @@ def pHA_EM_lowrank(movie_data, options, para, lrh):
     inv_bSig_x = scipy.linalg.inv(bSig_x)
     ES = bSig_s.T.dot(bW.T).dot(inv_bSig_x).dot(bX)
     bSig_s = bSig_s - bSig_s.T.dot(bW.T).dot(inv_bSig_x).dot(bW).dot(bSig_s) + ES.dot(ES.T)/float(nTR)
- 
+
     for m in range(nsubjs):
       print('-'),
       sys.stdout.flush()

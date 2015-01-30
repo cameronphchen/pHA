@@ -49,13 +49,13 @@ def spHA_VI(movie_data, options, para, lrh):
   #bK_i   = np.identity((nvoxel,nvoxel))
 
   #kernel = pyGPs.cov.RBFard(1) ## remember to modify the kernel in optimization objective function
+  #kernel = pyGPs.cov.SM(Q=50,D=1) ## remember to modify the kernel in optimization objective function 
   kernel = pyGPs.cov.RQ() ## remember to modify the kernel in optimization objective function 
   T_idx  = np.arange(nTR)
   T_idx  = T_idx[:,None]
   kernel.hyp = [random.random() for rr in range(len(kernel.hyp))]
   btheta = kernel.hyp
   bK_i   = kernel.getCovMatrix(T_idx,T_idx,'train')
-
   # initialization when first time run the algorithm
   if not os.path.exists(current_file):
     # variational parameters

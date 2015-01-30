@@ -17,6 +17,8 @@
 #
 # by Cameron Po-Hsuan Chen @ Princeton
 
+import sys
+sys.path.append('/usr/local/epd-7.1-2-rh5-x86_64/lib/python2.7/site-packages/libsvm')
 
 import numpy as np, scipy, random, sys, math, os
 import scipy.io
@@ -33,8 +35,12 @@ from pha_em_shift_lowrank import pHA_EM_shift_lowrank
 from ha_rand import HA_rand
 from pha_em_rand import pHA_EM_rand
 from spha_vi import spHA_VI
-import sys
-sys.path.append('/Users/ChimatChen/anaconda/python.app/Contents/lib/python2.7/site-packages/')
+from ppca import pPCA
+from pica import pICA
+from ha_sm_newton import HA_SM_Newton
+from ha_sm_retraction import HA_SM_Retraction
+from ha_sm_retraction_regu import HA_SM_Retraction_Regu
+#sys.path.append('/Users/ChimatChen/anaconda/python.app/Contents/lib/python2.7/site-packages/')
 
 
 # load experiment parameters
@@ -119,11 +125,17 @@ if 'spHA_VI_mysseg' in para['align_algo']:
   para['kernel']   = sys.argv[7]
   nfeature = para['nfeature']
   options['working_path'] = options['working_path'] + para['kernel'] + '/' +'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
-elif 'pHA_EM_lowrank_mysseg' in para['align_algo']:
+elif 'pHA_EM_lowrank_mysseg' in para['align_algo'] or 'HA_SM_Newton_mysseg' in para['align_algo'] or 'HA_SM_Retraction_mysseg' in para['align_algo']:
   para['ranNum']=int(sys.argv[5])
   para['nfeature'] = int(sys.argv[6])
   nfeature = para['nfeature']
   options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/'
+elif 'HA_SM_Retraction_Regu_mysseg' in para['align_algo']:
+  para['ranNum']   =int(sys.argv[5])
+  para['nfeature'] =int(sys.argv[6])
+  para['gamma']    =float(sys.argv[7]) 
+  nfeature = para['nfeature']
+  options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/' + 'rand' + str(para['ranNum']) +'/' + str(para['gamma']) +'/'
 elif 'pHA_EM_shift_lowrank_mysseg' in para['align_algo'] :
   para['nfeature'] = int(sys.argv[5])
   nfeature = para['nfeature']
@@ -133,15 +145,20 @@ elif 'HA_rand_mysseg' in para['align_algo'] or 'pHA_EM_rand_mysseg' in para['ali
   options['working_path'] = options['working_path'] + '/rand'+str(para['ranNum'])+'/'
 elif 'HAreg_mysseg' in para['align_algo'] :
   para['alpha']=float(sys.argv[5])
+elif 'pPCA_mysseg'  in para['align_algo'] or 'pICA_mysseg' in para['align_algo'] :
+  para['nfeature'] = int(sys.argv[5])
+  nfeature = para['nfeature']
+  options['working_path'] = options['working_path'] + 'lowrank' + str(nfeature) +'/'
+
 
 
 if not os.path.exists(options['working_path']):
   os.makedirs(options['working_path'])
 
-#if os.path.exists(options['working_path']+align_algo+'_lh_'+str(nvoxel)+'vx_current.npz'):
-#  os.remove(options['working_path']+align_algo+'_lh_'+str(nvoxel)+'vx_current.npz')
-#if os.path.exists(options['working_path']+align_algo+'_rh_'+str(nvoxel)+'vx_current.npz'):
-#  os.remove(options['working_path']+align_algo+'_rh_'+str(nvoxel)+'vx_current.npz')
+if os.path.exists(options['working_path']+align_algo+'_lh_'+str(nvoxel)+'vx_current.npz'):
+  os.remove(options['working_path']+align_algo+'_lh_'+str(nvoxel)+'vx_current.npz')
+if os.path.exists(options['working_path']+align_algo+'_rh_'+str(nvoxel)+'vx_current.npz'):
+  os.remove(options['working_path']+align_algo+'_rh_'+str(nvoxel)+'vx_current.npz')
 
 # for niter/niter_unit round, each round the alignment algorithm will run niter_unit iterations
 for i in range(para['niter']/para['niter_unit']):
@@ -153,6 +170,15 @@ for i in range(para['niter']/para['niter_unit']):
   elif 'HA_rand_mysseg' in para['align_algo'] :
     new_niter_lh = HA_rand(movie_data_lh_trn, options, para, 'lh')
     new_niter_rh = HA_rand(movie_data_rh_trn, options, para, 'rh')
+  elif 'HA_SM_Newton_mysseg' in para['align_algo'] : 
+    new_niter_lh = HA_SM_Newton(movie_data_lh_trn, options, para, 'lh')
+    new_niter_rh = HA_SM_Newton(movie_data_rh_trn, options, para, 'rh')
+  elif 'HA_SM_Retraction_mysseg' in para['align_algo'] :
+    new_niter_lh = HA_SM_Retraction(movie_data_lh_trn, options, para, 'lh')
+    new_niter_rh = HA_SM_Retraction(movie_data_rh_trn, options, para, 'rh')
+  elif 'HA_SM_Retraction_Regu_mysseg' in para['align_algo'] :
+    new_niter_lh = HA_SM_Retraction_Regu(movie_data_lh_trn, options, para, 'lh')
+    new_niter_rh = HA_SM_Retraction_Regu(movie_data_rh_trn, options, para, 'rh')
   elif 'pHA_EM_mysseg' in para['align_algo'] or 'pHA_EM_shuffle_mysseg' in  para['align_algo'] :
     new_niter_lh = pHA_EM(movie_data_lh_trn, options, para, 'lh')
     new_niter_rh = pHA_EM(movie_data_rh_trn, options, para, 'rh')
@@ -171,6 +197,12 @@ for i in range(para['niter']/para['niter_unit']):
   elif 'HAreg_mysseg' in para['align_algo'] :
     new_niter_lh = RHA(movie_data_lh_trn, options, para, 'lh')
     new_niter_rh = RHA(movie_data_rh_trn, options, para, 'rh')
+  elif 'pPCA_mysseg' in para['align_algo'] :
+    new_niter_lh = pPCA(movie_data_lh_trn, options, para, 'lh')
+    new_niter_rh = pPCA(movie_data_rh_trn, options, para, 'rh')
+  elif 'pICA_mysseg' in para['align_algo'] :
+    new_niter_lh = pICA(movie_data_lh_trn, options, para, 'lh')
+    new_niter_rh = pICA(movie_data_rh_trn, options, para, 'rh')  
   elif 'None' in para['align_algo']  :
     # without any alignment, set new_niter_lh and new_niter_rh=0, the corresponding transformation
     # matrices are identity matrices
@@ -183,6 +215,7 @@ for i in range(para['niter']/para['niter_unit']):
 
   # load transformation matrices
   if not 'None' in para['align_algo'] :
+    #print 'load'+options['working_path']+para['align_algo']+'_l/rh_'+str(para['nvoxel'])+'vx_'+str(new_niter_lh)+'.npz'
     workspace_lh = np.load(options['working_path']+para['align_algo']+'_lh_'+str(para['nvoxel'])+'vx_'+str(new_niter_lh)+'.npz')
     workspace_rh = np.load(options['working_path']+para['align_algo']+'_rh_'+str(para['nvoxel'])+'vx_'+str(new_niter_rh)+'.npz')
 
@@ -199,9 +232,7 @@ for i in range(para['niter']/para['niter_unit']):
       transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
       transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
   elif 'pHA_EM_lowrank_mysseg' in para['align_algo'] or 'pHA_EM_shift_lowrank_mysseg' in para['align_algo']\
-      or 'spHA_VI_mysseg' in  para['align_algo']:
-    tst_data = np.zeros(shape = (nfeature*2,56))
-    trn_data = np.zeros(shape = (nfeature*2,504))
+      or 'spHA_VI_mysseg' in  para['align_algo']  :
     transform_lh = np.zeros((nvoxel,nfeature,nsubjs))
     transform_rh = np.zeros((nvoxel,nfeature,nsubjs))
     bW_lh = workspace_lh['bW']
@@ -209,6 +240,23 @@ for i in range(para['niter']/para['niter_unit']):
     for m in range(nsubjs):
       transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
       transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
+  elif 'pPCA_mysseg' in  para['align_algo'] or 'pICA_mysseg' in para['align_algo']:
+    transform_lh = np.zeros((nvoxel,nfeature,nsubjs))
+    transform_rh = np.zeros((nvoxel,nfeature,nsubjs))
+    bW_lh = workspace_lh['R']
+    bW_rh = workspace_rh['R']
+    for m in range(nsubjs):
+      transform_lh[:,:,m] = bW_lh
+      transform_rh[:,:,m] = bW_rh
+  elif 'HA_SM_Newton_mysseg' in para['align_algo'] or 'HA_SM_Retraction_mysseg' in para['align_algo'] \
+      or 'HA_SM_Retraction_Regu_mysseg' in para['align_algo'] :
+    transform_lh = np.zeros((nvoxel,nfeature,nsubjs))
+    transform_rh = np.zeros((nvoxel,nfeature,nsubjs))
+    bW_lh = workspace_lh['W']
+    bW_rh = workspace_rh['W']
+    for m in range(nsubjs):
+      transform_lh[:,:,m] = bW_lh[:,:,m]
+      transform_rh[:,:,m] = bW_rh[:,:,m]
   elif 'None' in para['align_algo'] :
     transform_lh = np.zeros((nvoxel,nvoxel,nsubjs))
     transform_rh = np.zeros((nvoxel,nvoxel,nsubjs))

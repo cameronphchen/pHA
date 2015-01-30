@@ -30,9 +30,9 @@ niter_unit = para['niter_unit']
 
 # load experiment options
 # rondo options
-options = {'input_path'  : '/mnt/cd/ramadge/pohsuan/pHA/data/input/', \
-           'working_path': '/mnt/cd/fastscratch/pohsuan/pHA/data/working/'+str(para['nTR'])+'TR/',\
-           'output_path' : '/mnt/cd/ramadge/pohsuan/pHA/data/output/'+str(para['nTR'])+'TR/'}
+options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data/input/', \
+           'working_path': '/fastscratch/pohsuan/pHA/data/working/'+str(para['nTR'])+'TR/',\
+           'output_path' : '/jukebox/ramadge/pohsuan/pHA/data/output/'+str(para['nTR'])+'TR/'}
 
 # local options
 #options = {'input_path'  : '/Volumes/ramadge/pohsuan/pHA/data/input/', \
@@ -42,8 +42,8 @@ options = {'input_path'  : '/mnt/cd/ramadge/pohsuan/pHA/data/input/', \
 loglike = np.zeros(niter/niter_unit)
 
 for i in range(1,niter):
-  ws_lh = np.load(options['output_path']+'pHA_EM_loglikelihood_lh_'+str(nvoxel)+'vx_'+str(i)+'.npz')
-  ws_rh = np.load(options['output_path']+'pHA_EM_loglikelihood_rh_'+str(nvoxel)+'vx_'+str(i)+'.npz')
+  ws_lh = np.load(options['output_path']+'pHA_EM_lowrank_mysseg_1st_loglikelihood_lh_'+str(nvoxel)+'vx_'+str(i)+'.npz')
+  ws_rh = np.load(options['output_path']+'pHA_EM_lowrank_mysseg_1st_loglikelihood_rh_'+str(nvoxel)+'vx_'+str(i)+'.npz')
   
   loglike[i] = ws_lh['loglike'] + ws_rh['loglike'] 
 

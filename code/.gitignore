@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Rondo log
+*.o*
+
+# vim temp file
+*.swp
+
+# don't track data folder
+/data
+
+# mac system file
+*.DS_Store

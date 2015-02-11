@@ -9,7 +9,7 @@
 import numpy as np, scipy, random, sys, math, os
 from scipy import stats
 
-def HA_swaroop(movie_data, options, para, lrh):
+def align(movie_data, options, para, lrh):
 
   nvoxel = para['nvoxel']
   nsubjs = para['nsubjs']

@@ -17,15 +17,19 @@
 import numpy as np, scipy, random, sys, math, os
 from scipy import stats
 
-def pHA_EM_rand(movie_data, options, para, lrh):
+def align(movie_data, options, para, lrh):
 
   nvoxel = movie_data.shape[0]
   nTR    = movie_data.shape[1]
   nsubjs = movie_data.shape[2]
 
+  nfeature   = para['nfeature']
   align_algo = para['align_algo']
 
-  current_file = options['working_path']+align_algo+'_'+lrh+'_'+str(nvoxel)+'vx_current.npz' 
+  if not os.path.exists(options['working_path']):
+    os.makedirs(options['working_path'])
+
+  current_file = options['working_path']+align_algo+'_'+lrh+'_'+str(nvoxel)+'vx_current.npz'
   # zscore the data
   bX = np.zeros((nsubjs*nvoxel,nTR))
   for m in range(nsubjs):
@@ -35,17 +39,20 @@ def pHA_EM_rand(movie_data, options, para, lrh):
 
   # initialization when first time run the algorithm
   if not os.path.exists(current_file):
-    bSig_s = np.identity(nvoxel)
-    bW     = np.zeros((nsubjs*nvoxel,nvoxel))
+    bSig_s = np.identity(nfeature)
+    bW     = np.zeros((nsubjs*nvoxel,nfeature))
     bmu    = np.zeros(nvoxel*nsubjs)
     sigma2  = np.zeros(nsubjs)
-    ES     = np.zeros((nvoxel,nTR))
-    ran_seed = para['ranNum']
-    random.seed(ran_seed)
-    A = np.mat(np.random.random((nvoxel,nvoxel)))
-    Q, R_qr = np.linalg.qr(A)
+    ES     = np.zeros((nfeature,nTR)) 
+    # build shift matrix
+    A = np.zeros((nvoxel, nfeature))
+    for i in range(nvoxel):
+      A[i,i%nfeature] = 1;
+    for i in range(nfeature):
+      A[:,i] = A[:,i] / np.linalg.norm( A[:,i])
+
     for m in range(nsubjs):
-      bW[m*nvoxel:(m+1)*nvoxel,:] = Q 
+      bW[m*nvoxel:(m+1)*nvoxel,:] = A 
       bmu[m*nvoxel:(m+1)*nvoxel] = np.mean(bX[m*nvoxel:(m+1)*nvoxel,:],1)
       sigma2[m] = 1
     niter = 0
@@ -87,7 +94,7 @@ def pHA_EM_rand(movie_data, options, para, lrh):
       print('-'),
       sys.stdout.flush()
       Am = bX[m*nvoxel:(m+1)*nvoxel,:].dot(ES.T)
-      Um, sm, Vm = np.linalg.svd(Am+0.00001*np.eye(nvoxel))
+      Um, sm, Vm = np.linalg.svd(Am,full_matrices=0)
       bW[m*nvoxel:(m+1)*nvoxel,:] = Um.dot(Vm)
       sigma2[m] =    np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bX[m*nvoxel:(m+1)*nvoxel,:]))\
                   -2*np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bW[m*nvoxel:(m+1)*nvoxel,:]).dot(ES))\

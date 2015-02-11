@@ -17,20 +17,15 @@
 import numpy as np, scipy, random, sys, math, os
 from scipy import stats
 
-def pHA_EM_lowrank(movie_data, options, para, lrh):
+def align(movie_data, options, para, lrh):
 
   nvoxel = movie_data.shape[0]
   nTR    = movie_data.shape[1]
   nsubjs = movie_data.shape[2]
 
-  nfeature   = para['nfeature']
-  ran_seed = para['ranNum']
   align_algo = para['align_algo']
 
-  if not os.path.exists(options['working_path']):
-    os.makedirs(options['working_path'])
-
-  current_file = options['working_path']+align_algo+'_'+lrh+'_'+str(nvoxel)+'vx_current.npz'
+  current_file = options['working_path']+align_algo+'_'+lrh+'_'+str(nvoxel)+'vx_current.npz' 
   # zscore the data
   bX = np.zeros((nsubjs*nvoxel,nTR))
   for m in range(nsubjs):
@@ -40,13 +35,14 @@ def pHA_EM_lowrank(movie_data, options, para, lrh):
 
   # initialization when first time run the algorithm
   if not os.path.exists(current_file):
-    bSig_s = np.identity(nfeature)
-    bW     = np.zeros((nsubjs*nvoxel,nfeature))
+    bSig_s = np.identity(nvoxel)
+    bW     = np.zeros((nsubjs*nvoxel,nvoxel))
     bmu    = np.zeros(nvoxel*nsubjs)
     sigma2  = np.zeros(nsubjs)
-    ES     = np.zeros((nfeature,nTR)) 
-    np.random.seed(ran_seed)
-    A = np.mat(np.random.random((nvoxel,nfeature)))
+    ES     = np.zeros((nvoxel,nTR))
+    ran_seed = para['ranNum']
+    random.seed(ran_seed)
+    A = np.mat(np.random.random((nvoxel,nvoxel)))
     Q, R_qr = np.linalg.qr(A)
     for m in range(nsubjs):
       bW[m*nvoxel:(m+1)*nvoxel,:] = Q 
@@ -75,7 +71,7 @@ def pHA_EM_lowrank(movie_data, options, para, lrh):
   for i in range(para['niter_unit']):
     print('.'),
     sys.stdout.flush()
-
+    
     bSig_x = np.zeros((nvoxel*nsubjs,nvoxel*nsubjs))
     bSig_x = bW.dot(bSig_s).dot(bW.T)
     for m in range(nsubjs):
@@ -86,12 +82,12 @@ def pHA_EM_lowrank(movie_data, options, para, lrh):
     inv_bSig_x = scipy.linalg.inv(bSig_x)
     ES = bSig_s.T.dot(bW.T).dot(inv_bSig_x).dot(bX)
     bSig_s = bSig_s - bSig_s.T.dot(bW.T).dot(inv_bSig_x).dot(bW).dot(bSig_s) + ES.dot(ES.T)/float(nTR)
-
+ 
     for m in range(nsubjs):
       print('-'),
       sys.stdout.flush()
       Am = bX[m*nvoxel:(m+1)*nvoxel,:].dot(ES.T)
-      Um, sm, Vm = np.linalg.svd(Am,full_matrices=0)
+      Um, sm, Vm = np.linalg.svd(Am+0.00001*np.eye(nvoxel))
       bW[m*nvoxel:(m+1)*nvoxel,:] = Um.dot(Vm)
       sigma2[m] =    np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bX[m*nvoxel:(m+1)*nvoxel,:]))\
                   -2*np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bW[m*nvoxel:(m+1)*nvoxel,:]).dot(ES))\

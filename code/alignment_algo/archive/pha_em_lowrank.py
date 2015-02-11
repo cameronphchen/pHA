@@ -17,13 +17,14 @@
 import numpy as np, scipy, random, sys, math, os
 from scipy import stats
 
-def pHA_EM_shift_lowrank(movie_data, options, para, lrh):
+def align(movie_data, options, para, lrh):
 
   nvoxel = movie_data.shape[0]
   nTR    = movie_data.shape[1]
   nsubjs = movie_data.shape[2]
 
   nfeature   = para['nfeature']
+  ran_seed = para['ranNum']
   align_algo = para['align_algo']
 
   if not os.path.exists(options['working_path']):
@@ -44,15 +45,11 @@ def pHA_EM_shift_lowrank(movie_data, options, para, lrh):
     bmu    = np.zeros(nvoxel*nsubjs)
     sigma2  = np.zeros(nsubjs)
     ES     = np.zeros((nfeature,nTR)) 
-    # build shift matrix
-    A = np.zeros((nvoxel, nfeature))
-    for i in range(nvoxel):
-      A[i,i%nfeature] = 1;
-    for i in range(nfeature):
-      A[:,i] = A[:,i] / np.linalg.norm( A[:,i])
-
+    np.random.seed(ran_seed)
+    A = np.mat(np.random.random((nvoxel,nfeature)))
+    Q, R_qr = np.linalg.qr(A)
     for m in range(nsubjs):
-      bW[m*nvoxel:(m+1)*nvoxel,:] = A 
+      bW[m*nvoxel:(m+1)*nvoxel,:] = Q 
       bmu[m*nvoxel:(m+1)*nvoxel] = np.mean(bX[m*nvoxel:(m+1)*nvoxel,:],1)
       sigma2[m] = 1
     niter = 0
@@ -78,7 +75,7 @@ def pHA_EM_shift_lowrank(movie_data, options, para, lrh):
   for i in range(para['niter_unit']):
     print('.'),
     sys.stdout.flush()
-    
+
     bSig_x = np.zeros((nvoxel*nsubjs,nvoxel*nsubjs))
     bSig_x = bW.dot(bSig_s).dot(bW.T)
     for m in range(nsubjs):
@@ -89,7 +86,7 @@ def pHA_EM_shift_lowrank(movie_data, options, para, lrh):
     inv_bSig_x = scipy.linalg.inv(bSig_x)
     ES = bSig_s.T.dot(bW.T).dot(inv_bSig_x).dot(bX)
     bSig_s = bSig_s - bSig_s.T.dot(bW.T).dot(inv_bSig_x).dot(bW).dot(bSig_s) + ES.dot(ES.T)/float(nTR)
- 
+
     for m in range(nsubjs):
       print('-'),
       sys.stdout.flush()

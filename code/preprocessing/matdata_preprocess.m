@@ -2,20 +2,16 @@
 
 % please put compute_voxel_ranks.m under the same directory
 nTR_str = '2203'
-nvoxel_str = '1300'
+nvoxel_str = '500'
+dataset = 'raider'
 
 nTR = str2num(nTR_str)
 nvoxel = str2num(nvoxel_str)
 
-load ../data/input/movie_data_princeton;
-load ../data/input/vt_masks_lhrh;
-load ../data/input/monkeydog_timeaveraged_data.mat
-load ../data/input/block_labels.txt
-
-mkdir(['../data/working/' int2str(nTR) 'TR/'])
-mkdir(['../data/output/' int2str(nTR) 'TR/'])
-mkdir(['/fastscratch/pohsuan/pHA/data/working/' int2str(nTR) 'TR/'])
-
+load /jukebox/ramadge/pohsuan/pHA/data_v2/raw/raider/movie_data_princeton;
+load /jukebox/ramadge/pohsuan/pHA/data_v2/raw/raider/vt_masks_lhrh;
+load /jukebox/ramadge/pohsuan/pHA/data_v2/raw/raider/monkeydog_timeaveraged_data.mat
+load /jukebox/ramadge/pohsuan/pHA/data_v2/raw/raider/block_labels.txt
 
 for subj_index = 1:size(movie_data_raw_despiked,1)
     mv_data = movie_data_raw_despiked{subj_index,1};
@@ -56,9 +52,11 @@ end
 assert(sum(sum(sum(isnan(movie_data_rh)))) == 0)
 assert(sum(sum(sum(isnan(movie_data_lh)))) == 0)
 
+output_path = ['/jukebox/ramadge/pohsuan/pHA/data_v2/input/' dataset '/' nvoxel_str 'vx/' nTR_str 'TR/']
 
-save(['/fastscratch/pohsuan/pHA/data/working/' int2str(nTR) 'TR/movie_data_lh_' int2str(nvoxel) 'vx.mat'],'movie_data_lh');
-save(['/fastscratch/pohsuan/pHA/data/working/' int2str(nTR) 'TR/movie_data_rh_' int2str(nvoxel) 'vx.mat'],'movie_data_rh');
+mkdir(output_path)
+save([output_path 'movie_data_lh.mat'],'movie_data_lh');
+save([output_path 'movie_data_rh.mat'],'movie_data_rh');
 
 
 % apply voxel selection on image watching data
@@ -86,8 +84,8 @@ end
 assert(sum(sum(sum(isnan(mkdg_data_lh)))) == 0)
 assert(sum(sum(sum(isnan(mkdg_data_rh)))) == 0)
 
-save(['/fastscratch/pohsuan/pHA/data/working/' int2str(nTR) 'TR/mkdg_data_lh_' int2str(nvoxel) 'vx.mat'],'mkdg_data_lh');
-save(['/fastscratch/pohsuan/pHA/data/working/' int2str(nTR) 'TR/mkdg_data_rh_' int2str(nvoxel) 'vx.mat'],'mkdg_data_rh');
+save([output_path 'mkdg_data_lh.mat'],'mkdg_data_lh');
+save([output_path 'mkdg_data_rh.mat'],'mkdg_data_rh');
 
 
 

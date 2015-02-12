@@ -16,14 +16,13 @@ from scipy import stats
 import random
 import argparse
 from scikits.learn.svm import NuSVC
-#from alignment_algo import *
 import importlib
-#import sys
+import pprint
 
 
 ## argument parsing
 usage = '%(prog)s dataset nvoxel nTR  exptype [--loo] [--expopt] [--winsize] \
-align_algo [-k kernel] niter nfeature [-r RANDSEED]'
+align_algo [-k kernel] niter nfeature [-r RANDSEED] [--strfresh]'
 parser = argparse.ArgumentParser(usage=usage)
 
 parser.add_argument("dataset",    help="name of the dataset")
@@ -49,13 +48,21 @@ parser.add_argument("nfeature", type=int,
                     help="number of features")
 parser.add_argument("-r", "--randseed", type=int, metavar='',
                     help="random seed for initialization")
+parser.add_argument("--strfresh", action="store_true" ,
+                    help="start alignment fresh, not picking up from where was left")
+
 
 args = parser.parse_args()
-print args
+print '--------------experiment arguments--------------'
+pprint.pprint(args.__dict__,width=1)
+
+# sanity check
+assert args.nvoxel >= args.nfeature
 
 data_folder = args.dataset+'/'+str(args.nvoxel)+'vx/'+str(args.nTR)+'TR/'
 exp_folder  = args.exptype + ("_loo" if args.loo else "" ) + \
-              ("_"+args.expopt if args.expopt else "" ) + '/' 
+              ("_"+args.expopt  if args.expopt else "" ) + \
+              ("_winsize"+str(args.winsize) if args.winsize else "" ) + '/' 
 alg_folder  = args.align_algo + ("_"+args.kernel if args.kernel else "") +'/'
 opt_folder  = str(args.nfeature) + 'feat/' + \
               ("rand"+str(args.randseed)+'/' if args.randseed else "identity/" )
@@ -66,9 +73,22 @@ options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data_v2/input/'+data_fo
                             data_folder+exp_folder+alg_folder+opt_folder,\
            'output_path' : '/jukebox/ramadge/pohsuan/pHA/data_v2/output/'+\
                             data_folder+exp_folder+alg_folder+opt_folder}
+print '----------------experiment paths----------------'
+pprint.pprint(options,width=1)
+print '------------------------------------------------'
 
-print options
+if not os.path.exists(options['working_path']):
+    os.makedirs(options['working_path'])
+if not os.path.exists(options['output_path']):
+    os.makedirs(options['output_path'])
 
+if args.strfresh:
+  if os.path.exists(options['working_path']+args.align_algo+'_rh_current.npz'):
+    os.remove(options['working_path']+args.align_algo+'_rh_current.npz')
+  if os.path.exists(options['working_path']+args.align_algo+'_lh_current.npz'):
+    os.remove(options['working_path']+args.align_algo+'_lh_current.npz')
+
+print 'start loading data'
 # load data for alignment and prediction
 # load movie data after voxel selection by matdata_preprocess.m 
 if args.exptype == 'imgpred':
@@ -89,15 +109,17 @@ elif args.exptype == 'mysseg':
   movie_data_lh = movie_data_lh['movie_data_lh'] 
   movie_data_rh = movie_data_rh['movie_data_rh'] 
 
-  movie_data_lh_1st = movie_data_lh[:,0:nTR/2,:]
-  movie_data_lh_2nd = movie_data_lh[:,(nTR/2+1):nTR,:]
-  movie_data_rh_1st = movie_data_rh[:,0:nTR/2,:]
-  movie_data_rh_2nd = movie_data_rh[:,(nTR/2+1):nTR,:]
+  movie_data_lh_1st = movie_data_lh[:,0:args.nTR/2,:]
+  movie_data_lh_2nd = movie_data_lh[:,(args.nTR/2+1):args.nTR,:]
+  movie_data_rh_1st = movie_data_rh[:,0:args.nTR/2,:]
+  movie_data_rh_2nd = movie_data_rh[:,(args.nTR/2+1):args.nTR,:]
 
   align_data_lh = np.zeros((movie_data_lh_1st.shape))
   align_data_rh = np.zeros((movie_data_rh_1st.shape))
   pred_data_lh  = np.zeros((movie_data_lh_2nd.shape))
   pred_data_rh  = np.zeros((movie_data_rh_2nd.shape))
+
+  nsubjs = align_data_lh.shape[2]
 
   if '1st' == args.expopt:
     for m in range(nsubjs):
@@ -123,10 +145,9 @@ else:
 assert nvoxel_pred == nvoxel_align
 assert nvoxel_pred == args.nvoxel
 assert nsubjs_pred == nsubjs_align
-nsubjs = nsubjs_pred 
-assert nTR_align == args.nTR
 
 # run alignment
+print 'start alignment'
 algo = importlib.import_module('alignment_algo.'+args.align_algo)
 for i in range(args.niter):
   new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
@@ -137,8 +158,8 @@ for i in range(args.niter):
 
   # load transformation matrices
   if args.align_algo != 'None' :
-    workspace_lh = np.load(options['working_path']+para['align_algo']+'_lh_'+str(new_niter_lh)+'.npz')
-    workspace_rh = np.load(options['working_path']+para['align_algo']+'_rh_'+str(new_niter_rh)+'.npz')
+    workspace_lh = np.load(options['working_path']+args.align_algo+'_lh_'+str(new_niter_lh)+'.npz')
+    workspace_rh = np.load(options['working_path']+args.align_algo+'_rh_'+str(new_niter_rh)+'.npz')
 
   # prepare training and testing data
   transform_lh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
@@ -152,8 +173,8 @@ for i in range(args.niter):
     bW_lh = workspace_lh['bW']
     bW_rh = workspace_rh['bW']
     for m in range(nsubjs):
-      transform_lh[:,:,m] = bW_lh[m*nvoxel:(m+1)*nvoxel,:]
-      transform_rh[:,:,m] = bW_rh[m*nvoxel:(m+1)*nvoxel,:]
+      transform_lh[:,:,m] = bW_lh[m*args.nvoxel:(m+1)*args.nvoxel,:]
+      transform_rh[:,:,m] = bW_rh[m*args.nvoxel:(m+1)*args.nvoxel,:]
   elif args.align_algo in ['ppca','pica']:
     bW_lh = workspace_lh['R']
     bW_rh = workspace_rh['R']
@@ -168,11 +189,10 @@ for i in range(args.niter):
       transform_rh[:,:,m] = bW_rh[:,:,m]
   elif args.align_algo == 'None' :
     for m in range(nsubjs):
-      transform_lh[:,:,m] = np.identity(nvoxel)
-      transform_rh[:,:,m] = np.identity(nvoxel)
+      transform_lh[:,:,m] = np.identity(args.nvoxel)
+      transform_rh[:,:,m] = np.identity(args.nvoxel)
   else :
     exit('alignment algo not recognize')
-
 
   # transformed mkdg data with learned transformation matrices
   transformed_data = np.zeros((args.nfeature*2 , nTR_pred ,nsubjs))
@@ -184,6 +204,8 @@ for i in range(args.niter):
 
   accu = np.zeros(shape=nsubjs)
 
+
+  # experiment
   if args.exptype == 'imgpred':
     # image stimulus prediction 
     for tst_subj in range(nsubjs):
@@ -200,9 +222,9 @@ for i in range(args.niter):
       clf.fit(trn_data.T, trn_label)
       pred_label = clf.predict(tst_data.T)
       
-      accu[loo] = sum(pred_label == tst_label)/float(len(pred_label))
+      accu[tst_subj] = sum(pred_label == tst_label)/float(len(pred_label))
   elif args.exptype == 'mysseg':
-    winsize = args.winsize
+    win_size = args.winsize
     nseg = nTR_pred - win_size
     # mysseg prediction prediction
     trn_data = np.zeros((args.nfeature*2*win_size, nseg))
@@ -228,7 +250,8 @@ for i in range(args.niter):
             corr_mtx[i,j] = -np.inf
 
       rank =  np.argmax(corr_mtx, axis=1)
-      accu[loo] = sum(rank == range(nseg)) / float(nseg)
+      accu[tst_subj] = sum(rank == range(nseg)) / float(nseg)
 
-  np.savez_compressed(options['working_path']+'acc_'+str(new_niter_lh)+'.npz',accu = accu)
-  print np.mean(accu) 
+  np.savez_compressed(options['working_path']+args.align_algo+'acc_'+str(new_niter_lh)+'.npz',accu = accu)
+  print np.mean(accu),
+  print scipy.stats.sem(accu)

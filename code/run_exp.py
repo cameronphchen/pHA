@@ -110,10 +110,6 @@ if args.exptype == 'imgpred':
   align_data_lh = movie_data_lh['movie_data_lh'] 
   align_data_rh = movie_data_rh['movie_data_rh'] 
 
-  if args.loo:
-    align_data_lh = np.delete(align_data_lh, args.loo,2) 
-    align_data_rh = np.delete(align_data_rh, args.loo,2)
-
 elif args.exptype == 'mysseg':
   if not args.winsize or not args.expopt:
     exist('mysseg experiment need arg winsize expopt')
@@ -147,12 +143,12 @@ elif args.exptype == 'mysseg':
   else:
     exit('missing 1st or 2nd arg for mysseg experiment')
 
-  if args.loo:
-    align_data_lh = np.delete(align_data_lh, args.loo,2) 
-    align_data_rh = np.delete(align_data_rh, args.loo,2)
-
 else:
   exit('invalid experiment type')
+
+if not args.loo == None:
+  align_data_lh_loo = np.delete(align_data_lh, args.loo,2) 
+  align_data_rh_loo = np.delete(align_data_rh, args.loo,2)
 
 (nvoxel_align, nTR_align, nsubjs_align) = align_data_lh.shape
 (nvoxel_pred , nTR_pred , nsubjs_pred)  = pred_data_lh.shape
@@ -160,15 +156,19 @@ nsubjs = nsubjs_pred
 # make sure the dimension of dataset is consistent with input args
 assert nvoxel_pred == nvoxel_align
 assert nvoxel_pred == args.nvoxel
-assert nsubjs_pred == nsubjs_align
+assert nsubjs_pred == nsubjs_align or args.loo
 
 # run alignment
 print 'start alignment'
 algo = importlib.import_module('alignment_algo.'+args.align_algo)
 expt = importlib.import_module('experiments.'+args.exptype)
 for i in range(args.niter):
-  new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
-  new_niter_rh = algo.align(align_data_rh, options, args, 'rh')
+  if args.loo == None:
+    new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
+    new_niter_rh = algo.align(align_data_rh, options, args, 'rh')
+  else:
+    new_niter_lh = algo.align(align_data_lh_loo, options, args, 'lh')
+    new_niter_rh = algo.align(align_data_rh_loo, options, args, 'rh')
 
   # make sure right and left brain alignment are working at the same iterations
   assert new_niter_lh == new_niter_rh
@@ -179,13 +179,13 @@ for i in range(args.niter):
     workspace_rh = np.load(options['working_path']+args.align_algo+'_rh_'+str(new_niter_rh)+'.npz')
 
   # load transformation matrices into transform_lrh for projecting testing data
-  if args.loo:
-    (transform_lh, transform_rh) = form_transformation_matrix_loo(args, 
-                                     workspace_lh, workspace_rh, nsubjs)
-  else:
+  if args.loo == None:
     (transform_lh, transform_rh) = form_transformation_matrix(args, 
                                      workspace_lh, workspace_rh, nsubjs)
-
+  else:
+    (transform_lh, transform_rh) = form_transformation_matrix_loo(args, 
+                                     workspace_lh, workspace_rh, 
+                                     align_data_lh, align_data_rh, nsubjs)
   # transformed mkdg data with learned transformation matrices
   transformed_data = np.zeros((args.nfeature*2 , nTR_pred ,nsubjs))
 
@@ -196,19 +196,15 @@ for i in range(args.niter):
 
   # experiment
   if args.exptype == 'imgpred':
-    if args.loo:
-      accu = expt.predict_loo(transformed_data, args, trn_label, tst_label)  
-    else:
+    if args.loo == None:
       accu = expt.predict(transformed_data, args, trn_label, tst_label)  
-  elif args.exptype == 'mysseg':
-    if args.loo:
-      accu = expt.predict_loo(transformed_data, args)
     else:
+      accu = expt.predict_loo(transformed_data, args, trn_label, tst_label)  
+  elif args.exptype == 'mysseg':
+    if args.loo == None:
       accu = expt.predict(transformed_data, args)
+    else:
+      accu = expt.predict_loo(transformed_data, args)
 
   np.savez_compressed(options['working_path']+args.align_algo+'acc_'+str(new_niter_lh)+'.npz',accu = accu)
-  print np.mean(accu),
-  print scipy.stats.sem(accu)
-
-
-
+  print np.mean(accu)

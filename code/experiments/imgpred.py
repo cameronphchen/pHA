@@ -37,19 +37,22 @@ def predict_loo(transformed_data, args, trn_label ,tst_label):
   sys.stdout.flush()
 
   (ndim, nsample , nsubjs) = transformed_data.shape
-  accu = np.zeros(shape=nsubjs)
 
   loo = args.loo
   loo_idx = range(nsubjs)
-  loo_idx = np.delete(loo_idx, loo)
+  loo_idx.remove(loo)
 
-  tst_data = np.zeros(shape = (ndim,nsample))
+  #tst_data = np.zeros(shape = (ndim,nsample))
   trn_data = np.zeros(shape = (ndim,(nsubjs-1)*nsample))
   # image stimulus prediction
+  # tst_data : ndim x nsample
   tst_data = transformed_data[:,:,loo]
 
-  for m in range(nsubjs-1):
+  for m in range(len(loo_idx)):
     trn_data[:,m*nsample:(m+1)*nsample] = transformed_data[:,:,loo_idx[m]]
+  
+  print trn_data
+  print tst_data
 
   # scikit-learn svm for classification
   clf = NuSVC(nu=0.5, kernel = 'linear')

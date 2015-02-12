@@ -46,7 +46,6 @@ def predict_loo(transformed_data, args):
   sys.stdout.flush()
 
   (ndim, nsample , nsubjs) = transformed_data.shape
-  accu = np.zeros(shape=nsubjs)
 
   tst_subj = args.loo
   win_size = args.winsize

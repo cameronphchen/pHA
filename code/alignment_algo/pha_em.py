@@ -47,7 +47,8 @@ def align(movie_data, options, args, lrh):
     ES     = np.zeros((nfeature,nTR))
 
     #initialization
-    if args.randseed:
+    if args.randseed != None:
+      print 'randinit',
       np.random.seed(args.randseed)
       A = np.mat(np.random.random((nvoxel,nfeature)))
       Q, R_qr = np.linalg.qr(A)

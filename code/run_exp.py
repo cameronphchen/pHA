@@ -64,8 +64,8 @@ exp_folder  = args.exptype+("_"+args.expopt  if args.expopt else "" ) + \
               ("_winsize"+str(args.winsize) if args.winsize else "" ) + '/' 
 alg_folder  = args.align_algo + ("_"+args.kernel if args.kernel else "") +'/'
 opt_folder  = str(args.nfeature) + 'feat/' + \
-              ("rand"+str(args.randseed)+'/' if args.randseed else "identity/" )+\
-              ("loo"+str(args.loo) if args.loo else "all" ) + '/'
+              ("rand"+str(args.randseed)+'/' if args.randseed != None else "identity/" )+\
+              ("loo"+str(args.loo) if args.loo != None else "all" ) + '/'
 
 # rondo options
 options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data_v2/input/'+data_folder,\
@@ -77,6 +77,14 @@ print '----------------experiment paths----------------'
 pprint.pprint(options,width=1)
 print '------------------------------------------------'
 
+# sanity check of the input arguments
+if args.exptype == 'mysseg':
+  if args.winsize == None:
+    sys.exit('mysseg experiment need arg winsize')
+  if args.expopt != '1st' and args.expopt != '2nd':
+    sys.exit('mysseg experiment need expopt as 1st or 2nd')
+
+# creating working folder
 if not os.path.exists(options['working_path']):
     os.makedirs(options['working_path'])
 if not os.path.exists(options['output_path']):
@@ -111,8 +119,6 @@ if args.exptype == 'imgpred':
   align_data_rh = movie_data_rh['movie_data_rh'] 
 
 elif args.exptype == 'mysseg':
-  if not args.winsize or not args.expopt:
-    exist('mysseg experiment need arg winsize expopt')
   movie_data_lh = scipy.io.loadmat(options['input_path']+'movie_data_lh.mat')
   movie_data_rh = scipy.io.loadmat(options['input_path']+'movie_data_rh.mat')
   movie_data_lh = movie_data_lh['movie_data_lh'] 
@@ -141,10 +147,13 @@ elif args.exptype == 'mysseg':
       pred_data_lh[:,:,m]  = stats.zscore(movie_data_lh_1st[:,:,m].T ,axis=0, ddof=1).T 
       pred_data_rh[:,:,m]  = stats.zscore(movie_data_rh_1st[:,:,m].T ,axis=0, ddof=1).T
   else:
-    exit('missing 1st or 2nd arg for mysseg experiment')
+    sys.exit('missing 1st or 2nd arg for mysseg experiment')
 
 else:
-  exit('invalid experiment type')
+  sys.exit('invalid experiment type')
+
+
+
 
 if not args.loo == None:
   align_data_lh_loo = np.delete(align_data_lh, args.loo,2) 
@@ -206,5 +215,5 @@ for i in range(args.niter):
     else:
       accu = expt.predict_loo(transformed_data, args)
 
-  np.savez_compressed(options['working_path']+args.align_algo+'acc_'+str(new_niter_lh)+'.npz',accu = accu)
+  np.savez_compressed(options['working_path']+args.align_algo+'_acc_'+str(new_niter_lh)+'.npz',accu = accu)
   print np.mean(accu)

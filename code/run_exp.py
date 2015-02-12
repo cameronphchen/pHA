@@ -297,6 +297,3 @@ for i in range(para['niter']/para['niter_unit']):
   np.savez_compressed(options['working_path']+'acc_'+para['align_algo']+'_'+str(para['nvoxel'])+'vx_'+str(new_niter_lh)+'.npz',accu = accu)
 
   print np.mean(accu) 
-
-
-

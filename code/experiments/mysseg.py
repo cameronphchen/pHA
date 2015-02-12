@@ -1,4 +1,4 @@
-# image prediction experiment code
+# mystery segment identification experiment code
 
 import numpy as np, sys
 from scipy import stats

@@ -18,7 +18,7 @@ import argparse
 from scikits.learn.svm import NuSVC
 import importlib
 import pprint
-
+from form_transformation_matrix import form_transformation_matrix
 
 ## argument parsing
 usage = '%(prog)s dataset nvoxel nTR  exptype [--loo] [--expopt] [--winsize] \
@@ -32,7 +32,7 @@ parser.add_argument("nTR", type = int,
                     help="number of TRs in the dataset")
 
 parser.add_argument("exptype",    help="name of the experiment type")
-parser.add_argument("-l", "--loo", action="store_true" , 
+parser.add_argument("-l", "--loo", type = int, 
                     help="whether this experiment is loo experiment")
 parser.add_argument("--expopt",    help="experiment options e.g. 1st or 2nd")
 parser.add_argument("-w", "--winsize", type = int,
@@ -92,11 +92,6 @@ print 'start loading data'
 # load data for alignment and prediction
 # load movie data after voxel selection by matdata_preprocess.m 
 if args.exptype == 'imgpred':
-  movie_data_lh = scipy.io.loadmat(options['input_path']+'movie_data_lh.mat')
-  movie_data_rh = scipy.io.loadmat(options['input_path']+'movie_data_rh.mat')
-  align_data_lh = movie_data_lh['movie_data_lh'] 
-  align_data_rh = movie_data_rh['movie_data_rh'] 
-  
   mkdg_data_lh = scipy.io.loadmat(options['input_path']+'mkdg_data_lh.mat')
   mkdg_data_rh = scipy.io.loadmat(options['input_path']+'mkdg_data_rh.mat')
   pred_data_lh = mkdg_data_lh['mkdg_data_lh'] 
@@ -109,6 +104,15 @@ if args.exptype == 'imgpred':
   tst_label = label[504:560]
   trn_label = np.squeeze(np.asarray(trn_label))
   tst_label = np.squeeze(np.asarray(tst_label))
+  
+  movie_data_lh = scipy.io.loadmat(options['input_path']+'movie_data_lh.mat')
+  movie_data_rh = scipy.io.loadmat(options['input_path']+'movie_data_rh.mat')
+  align_data_lh = movie_data_lh['movie_data_lh'] 
+  align_data_rh = movie_data_rh['movie_data_rh'] 
+
+  if args.loo:
+    align_data_lh = np.delete(align_data_lh, args.loo,2) 
+    align_data_rh = np.delete(align_data_rh, args.loo,2)
 
 elif args.exptype == 'mysseg':
   if not args.winsize or not args.expopt:
@@ -144,6 +148,11 @@ elif args.exptype == 'mysseg':
       pred_data_rh[:,:,m]  = stats.zscore(movie_data_rh_1st[:,:,m].T ,axis=0, ddof=1).T
   else:
     exit('missing 1st or 2nd arg for mysseg experiment')
+
+  if args.loo:
+    align_data_lh = np.delete(align_data_lh, args.loo,2) 
+    align_data_rh = np.delete(align_data_rh, args.loo,2)
+
 else:
   exit('invalid experiment type')
 
@@ -176,33 +185,9 @@ for i in range(args.niter):
   transform_rh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
  
   # load transformation matrices into transform for projecting testing data
-  if args.align_algo in ['ha']:
-    transform_lh = workspace_lh['R']
-    transform_rh = workspace_rh['R']
-  elif args.align_algo in ['pha_em','spha_vi']:
-    bW_lh = workspace_lh['bW']
-    bW_rh = workspace_rh['bW']
-    for m in range(nsubjs):
-      transform_lh[:,:,m] = bW_lh[m*args.nvoxel:(m+1)*args.nvoxel,:]
-      transform_rh[:,:,m] = bW_rh[m*args.nvoxel:(m+1)*args.nvoxel,:]
-  elif args.align_algo in ['ppca','pica']:
-    bW_lh = workspace_lh['R']
-    bW_rh = workspace_rh['R']
-    for m in range(nsubjs):
-      transform_lh[:,:,m] = bW_lh
-      transform_rh[:,:,m] = bW_rh
-  elif args.align_algo in ['ha_sm_retraction','ha_sm_newton']:
-    bW_lh = workspace_lh['W']
-    bW_rh = workspace_rh['W']
-    for m in range(nsubjs):
-      transform_lh[:,:,m] = bW_lh[:,:,m]
-      transform_rh[:,:,m] = bW_rh[:,:,m]
-  elif args.align_algo == 'None' :
-    for m in range(nsubjs):
-      transform_lh[:,:,m] = np.identity(args.nvoxel)
-      transform_rh[:,:,m] = np.identity(args.nvoxel)
-  else :
-    exit('alignment algo not recognize')
+  (transform_lh, transform_rh) = form_transformation_matrix(args, 
+                                   workspace_lh, workspace_rh, nsubjs)
+
 
   # transformed mkdg data with learned transformation matrices
   transformed_data = np.zeros((args.nfeature*2 , nTR_pred ,nsubjs))
@@ -211,8 +196,6 @@ for i in range(args.niter):
     trfed_lh_tmp = transform_lh[:,:,m].T.dot(pred_data_lh[:,:,m])
     trfed_rh_tmp = transform_rh[:,:,m].T.dot(pred_data_rh[:,:,m])
     transformed_data[:,:,m] = stats.zscore( np.vstack((trfed_lh_tmp,trfed_rh_tmp)).T ,axis=0, ddof=1).T
-
-#  accu = np.zeros(shape=nsubjs)
 
   # experiment
   if args.exptype == 'imgpred':

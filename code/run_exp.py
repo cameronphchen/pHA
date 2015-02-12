@@ -34,7 +34,7 @@ parser.add_argument("nTR", type = int,
 parser.add_argument("exptype",    help="name of the experiment type")
 parser.add_argument("-l", "--loo", type = int, 
                     help="whether this experiment is loo experiment")
-parser.add_argument("--expopt",    help="experiment options e.g. 1st or 2nd")
+parser.add_argument("-e","--expopt",    help="experiment options e.g. 1st or 2nd")
 parser.add_argument("-w", "--winsize", type = int,
                     help="mysseg winsize")
 
@@ -87,8 +87,8 @@ if args.exptype == 'mysseg':
 # creating working folder
 if not os.path.exists(options['working_path']):
     os.makedirs(options['working_path'])
-if not os.path.exists(options['output_path']):
-    os.makedirs(options['output_path'])
+#if not os.path.exists(options['output_path']):
+    #os.makedirs(options['output_path'])
 
 if args.strfresh:
   if os.path.exists(options['working_path']+args.align_algo+'_rh_current.npz'):
@@ -172,7 +172,9 @@ print 'start alignment'
 algo = importlib.import_module('alignment_algo.'+args.align_algo)
 expt = importlib.import_module('experiments.'+args.exptype)
 for i in range(args.niter):
-  if args.loo == None:
+  if args.align_algo == 'noalgin':
+    continue
+  elif args.loo == None:
     new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
     new_niter_rh = algo.align(align_data_rh, options, args, 'rh')
   else:
@@ -183,7 +185,7 @@ for i in range(args.niter):
   assert new_niter_lh == new_niter_rh
 
   # load transformation matrices
-  if args.align_algo != 'None' :
+  if args.align_algo != 'noalign' :
     workspace_lh = np.load(options['working_path']+args.align_algo+'_lh_'+str(new_niter_lh)+'.npz')
     workspace_rh = np.load(options['working_path']+args.align_algo+'_rh_'+str(new_niter_rh)+'.npz')
 
@@ -195,6 +197,7 @@ for i in range(args.niter):
     (transform_lh, transform_rh) = form_transformation_matrix_loo(args, 
                                      workspace_lh, workspace_rh, 
                                      align_data_lh, align_data_rh, nsubjs)
+
   # transformed mkdg data with learned transformation matrices
   transformed_data = np.zeros((args.nfeature*2 , nTR_pred ,nsubjs))
 

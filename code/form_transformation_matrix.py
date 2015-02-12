@@ -27,7 +27,7 @@ def form_transformation_matrix(args, workspace_lh ,workspace_rh, nsubjs):
     for m in range(nsubjs):
       transform_lh[:,:,m] = bW_lh[:,:,m]
       transform_rh[:,:,m] = bW_rh[:,:,m]
-  elif args.align_algo == 'None' :
+  elif args.align_algo == 'noalign' :
     for m in range(nsubjs):
       transform_lh[:,:,m] = np.identity(args.nvoxel)
       transform_rh[:,:,m] = np.identity(args.nvoxel)

@@ -45,7 +45,7 @@ def form_transformation_matrix_loo(args, workspace_lh ,workspace_rh, align_data_
       transform_lh[:,:,m] = bW_lh
       transform_rh[:,:,m] = bW_rh
 
-  elif args.align_algo == 'None' :
+  elif args.align_algo == 'noalign' :
     for m in range(nsubjs):
       transform_lh[:,:,m] = np.identity(args.nvoxel)
       transform_rh[:,:,m] = np.identity(args.nvoxel)

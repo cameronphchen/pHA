@@ -13,12 +13,12 @@
 import numpy as np, scipy, random, sys, math, os
 import scipy.io
 from scipy import stats
-import random
 import argparse
 from scikits.learn.svm import NuSVC
 import importlib
 import pprint
 from form_transformation_matrix import form_transformation_matrix
+from form_transformation_matrix_loo import form_transformation_matrix_loo
 
 ## argument parsing
 usage = '%(prog)s dataset nvoxel nTR  exptype [--loo] [--expopt] [--winsize] \
@@ -60,12 +60,12 @@ pprint.pprint(args.__dict__,width=1)
 assert args.nvoxel >= args.nfeature
 
 data_folder = args.dataset+'/'+str(args.nvoxel)+'vx/'+str(args.nTR)+'TR/'
-exp_folder  = args.exptype + ("_loo" if args.loo else "" ) + \
-              ("_"+args.expopt  if args.expopt else "" ) + \
+exp_folder  = args.exptype+("_"+args.expopt  if args.expopt else "" ) + \
               ("_winsize"+str(args.winsize) if args.winsize else "" ) + '/' 
 alg_folder  = args.align_algo + ("_"+args.kernel if args.kernel else "") +'/'
 opt_folder  = str(args.nfeature) + 'feat/' + \
-              ("rand"+str(args.randseed)+'/' if args.randseed else "identity/" )
+              ("rand"+str(args.randseed)+'/' if args.randseed else "identity/" )+\
+              ("loo"+str(args.loo) if args.loo else "all" ) + '/'
 
 # rondo options
 options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data_v2/input/'+data_folder,\
@@ -132,16 +132,14 @@ elif args.exptype == 'mysseg':
   pred_data_lh  = np.zeros((movie_data_lh_2nd.shape))
   pred_data_rh  = np.zeros((movie_data_rh_2nd.shape))
 
-  nsubjs = align_data_lh.shape[2]
-
   if '1st' == args.expopt:
-    for m in range(nsubjs):
+    for m in range(align_data_lh.shape[2]):
       align_data_lh[:,:,m] = stats.zscore(movie_data_lh_1st[:,:,m].T ,axis=0, ddof=1).T 
       align_data_rh[:,:,m] = stats.zscore(movie_data_rh_1st[:,:,m].T ,axis=0, ddof=1).T 
       pred_data_lh[:,:,m]  = stats.zscore(movie_data_lh_2nd[:,:,m].T ,axis=0, ddof=1).T 
       pred_data_rh[:,:,m]  = stats.zscore(movie_data_rh_2nd[:,:,m].T ,axis=0, ddof=1).T
   elif '2nd' == args.expopt:
-    for m in range(nsubjs):
+    for m in range(align_data_lh.shape[2]):
       align_data_lh[:,:,m] = stats.zscore(movie_data_lh_2nd[:,:,m].T ,axis=0, ddof=1).T 
       align_data_rh[:,:,m] = stats.zscore(movie_data_rh_2nd[:,:,m].T ,axis=0, ddof=1).T 
       pred_data_lh[:,:,m]  = stats.zscore(movie_data_lh_1st[:,:,m].T ,axis=0, ddof=1).T 
@@ -180,14 +178,13 @@ for i in range(args.niter):
     workspace_lh = np.load(options['working_path']+args.align_algo+'_lh_'+str(new_niter_lh)+'.npz')
     workspace_rh = np.load(options['working_path']+args.align_algo+'_rh_'+str(new_niter_rh)+'.npz')
 
-  # prepare training and testing data
-  transform_lh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
-  transform_rh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
- 
-  # load transformation matrices into transform for projecting testing data
-  (transform_lh, transform_rh) = form_transformation_matrix(args, 
-                                   workspace_lh, workspace_rh, nsubjs)
-
+  # load transformation matrices into transform_lrh for projecting testing data
+  if args.loo:
+    (transform_lh, transform_rh) = form_transformation_matrix_loo(args, 
+                                     workspace_lh, workspace_rh, nsubjs)
+  else:
+    (transform_lh, transform_rh) = form_transformation_matrix(args, 
+                                     workspace_lh, workspace_rh, nsubjs)
 
   # transformed mkdg data with learned transformation matrices
   transformed_data = np.zeros((args.nfeature*2 , nTR_pred ,nsubjs))
@@ -199,9 +196,15 @@ for i in range(args.niter):
 
   # experiment
   if args.exptype == 'imgpred':
-    accu = expt.predict(transformed_data, args, trn_label, tst_label)  
+    if args.loo:
+      accu = expt.predict_loo(transformed_data, args, trn_label, tst_label)  
+    else:
+      accu = expt.predict(transformed_data, args, trn_label, tst_label)  
   elif args.exptype == 'mysseg':
-    accu = expt.predict(transformed_data, args)
+    if args.loo:
+      accu = expt.predict_loo(transformed_data, args)
+    else:
+      accu = expt.predict(transformed_data, args)
 
   np.savez_compressed(options['working_path']+args.align_algo+'acc_'+str(new_niter_lh)+'.npz',accu = accu)
   print np.mean(accu),

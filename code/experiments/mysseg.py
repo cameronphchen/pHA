@@ -41,4 +41,39 @@ def predict(transformed_data, args):
 
   return accu
 
+def predict_loo(transformed_data, args):
+  print 'mysseg loo',
+  sys.stdout.flush()
 
+  (ndim, nsample , nsubjs) = transformed_data.shape
+  accu = np.zeros(shape=nsubjs)
+
+  tst_subj = args.loo
+  win_size = args.winsize
+  nseg = nsample - win_size
+  # mysseg prediction prediction
+  trn_data = np.zeros((ndim*win_size, nseg))
+
+  # the trn data also include the tst data, but will be subtracted when 
+  # calculating A
+  for m in range(nsubjs):
+    for w in range(win_size):
+      trn_data[w*ndim:(w+1)*ndim,:] += transformed_data[:,w:(w+nseg),m]
+
+  tst_data = np.zeros((ndim*win_size, nseg))
+  for w in range(win_size):
+    tst_data[w*ndim:(w+1)*ndim,:] = transformed_data[:,w:(w+nseg),tst_subj]
+    
+  A =  stats.zscore((trn_data - tst_data),axis=0, ddof=1)
+  B =  stats.zscore(tst_data,axis=0, ddof=1)
+  corr_mtx = B.T.dot(A)
+
+  for i in range(nseg):
+    for j in range(nseg):
+      if abs(i-j)<win_size and i != j :
+        corr_mtx[i,j] = -np.inf
+
+  rank = np.argmax(corr_mtx, axis=1)
+  accu = sum(rank == range(nseg)) / float(nseg)
+
+  return accu

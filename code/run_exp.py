@@ -158,6 +158,7 @@ assert nsubjs_pred == nsubjs_align
 # run alignment
 print 'start alignment'
 algo = importlib.import_module('alignment_algo.'+args.align_algo)
+expt = importlib.import_module('experiments.'+args.exptype)
 for i in range(args.niter):
   new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
   new_niter_rh = algo.align(align_data_rh, options, args, 'rh')
@@ -211,57 +212,17 @@ for i in range(args.niter):
     trfed_rh_tmp = transform_rh[:,:,m].T.dot(pred_data_rh[:,:,m])
     transformed_data[:,:,m] = stats.zscore( np.vstack((trfed_lh_tmp,trfed_rh_tmp)).T ,axis=0, ddof=1).T
 
-  accu = np.zeros(shape=nsubjs)
+#  accu = np.zeros(shape=nsubjs)
 
   # experiment
   if args.exptype == 'imgpred':
-    tst_data = np.zeros(shape = (args.nfeature*2,nTR_pred))
-    trn_data = np.zeros(shape = (args.nfeature*2,(nsubjs-1)*nTR_pred))
-    # image stimulus prediction 
-    for tst_subj in range(nsubjs):
-      tst_data = transformed_data[:,:,tst_subj]
-
-      trn_subj = range(nsubjs)
-      trn_subj.remove(tst_subj)
-
-      for m in range(nsubjs-1):
-        trn_data[:,m*56:(m+1)*56] = transformed_data[:,:,trn_subj[m]]
-
-      # scikit-learn svm for classification
-      clf = NuSVC(nu=0.5, kernel = 'linear')
-      clf.fit(trn_data.T, trn_label)
-      pred_label = clf.predict(tst_data.T)
-      
-      accu[tst_subj] = sum(pred_label == tst_label)/float(len(pred_label))
+    accu = expt.predict(transformed_data, args, trn_label, tst_label)  
   elif args.exptype == 'mysseg':
-    win_size = args.winsize
-    nseg = nTR_pred - win_size
-    # mysseg prediction prediction
-    trn_data = np.zeros((args.nfeature*2*win_size, nseg))
-
-    # the trn data also include the tst data, but will be subtracted when 
-    # calculating A
-    for m in range(nsubjs):
-      for w in range(win_size):
-        trn_data[w*2*args.nfeature:(w+1)*2*args.nfeature,:] += transformed_data[:,w:(w+nseg),m]
-
-    for tst_subj in range(nsubjs):
-      tst_data = np.zeros((args.nfeature*2*win_size, nseg))
-      for w in range(win_size):
-        tst_data[w*2*args.nfeature:(w+1)*2*args.nfeature,:] = transformed_data[:,w:(w+nseg),tst_subj]
-    
-      A =  stats.zscore((trn_data - tst_data),axis=0, ddof=1)
-      B =  stats.zscore(tst_data,axis=0, ddof=1)
-      corr_mtx = B.T.dot(A)
-
-      for i in range(nseg):
-        for j in range(nseg):
-          if abs(i-j)<win_size and i != j :
-            corr_mtx[i,j] = -np.inf
-
-      rank =  np.argmax(corr_mtx, axis=1)
-      accu[tst_subj] = sum(rank == range(nseg)) / float(nseg)
+    accu = expt.predict(transformed_data, args)
 
   np.savez_compressed(options['working_path']+args.align_algo+'acc_'+str(new_niter_lh)+'.npz',accu = accu)
   print np.mean(accu),
   print scipy.stats.sem(accu)
+
+
+

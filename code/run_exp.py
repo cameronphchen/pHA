@@ -101,6 +101,15 @@ if args.exptype == 'imgpred':
   mkdg_data_rh = scipy.io.loadmat(options['input_path']+'mkdg_data_rh.mat')
   pred_data_lh = mkdg_data_lh['mkdg_data_lh'] 
   pred_data_rh = mkdg_data_rh['mkdg_data_rh']
+
+  # load label for testing data
+  label = scipy.io.loadmat(options['input_path']+'subjall_picall_label.mat')
+  label = label['label']
+  trn_label = label[0:504]
+  tst_label = label[504:560]
+  trn_label = np.squeeze(np.asarray(trn_label))
+  tst_label = np.squeeze(np.asarray(tst_label))
+
 elif args.exptype == 'mysseg':
   if not args.winsize or not args.expopt:
     exist('mysseg experiment need arg winsize expopt')
@@ -140,7 +149,7 @@ else:
 
 (nvoxel_align, nTR_align, nsubjs_align) = align_data_lh.shape
 (nvoxel_pred , nTR_pred , nsubjs_pred)  = pred_data_lh.shape
-
+nsubjs = nsubjs_pred
 # make sure the dimension of dataset is consistent with input args
 assert nvoxel_pred == nvoxel_align
 assert nvoxel_pred == args.nvoxel
@@ -204,9 +213,10 @@ for i in range(args.niter):
 
   accu = np.zeros(shape=nsubjs)
 
-
   # experiment
   if args.exptype == 'imgpred':
+    tst_data = np.zeros(shape = (args.nfeature*2,nTR_pred))
+    trn_data = np.zeros(shape = (args.nfeature*2,(nsubjs-1)*nTR_pred))
     # image stimulus prediction 
     for tst_subj in range(nsubjs):
       tst_data = transformed_data[:,:,tst_subj]

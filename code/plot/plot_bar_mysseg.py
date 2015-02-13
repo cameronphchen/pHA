@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 import math
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("dataset",    help="name of the dataset")
@@ -14,6 +15,8 @@ parser.add_argument("nTR",
                     help="number of TRs in the dataset")
 parser.add_argument("nsubjs"     , type = int,  
                     help="number of subjects in the dataset")
+parser.add_argument("winsize", type = int,
+                    help="mysseg winsize")
 parser.add_argument("niter"     ,   
                     help="number of iterations to the algorithm")
 parser.add_argument("nrand"     , type = int,  
@@ -81,27 +84,38 @@ all_mean = np.zeros((len(name)))
 all_se   = np.zeros((len(name)))
 
 data_folder = args.dataset+'/'+args.nvoxel+'vx/'+args.nTR+'TR/'
-exp_folder  = 'imgpred/' 
 
-working_path = '/fastscratch/pohsuan/pHA/data/working/'+data_folder+exp_folder
+onetwo = ['1st','2nd']
+
+working_path = '/fastscratch/pohsuan/pHA/data/working/'+data_folder
 output_path  = '/jukebox/ramadge/pohsuan/pHA/data/output/'
 
 for i in range(len(algo_list)):
+  print i,
+  sys.stdout.flush()
   algo = algo_list[i]
+  
   algo_folder  = algo['align_algo'] + ("_"+algo['kernel'] if algo['kernel'] else "") +'/'
   filename    = algo['align_algo']+'_acc_'+args.niter +'.npz'
 
   if algo['rand'] == False:
-    opt_folder  = algo['nfeature']+'feat/identity/all/'
-    ws = np.load(working_path + algo_folder + opt_folder + filename) 
-    all_mean[i] = np.mean(ws['accu'])
-    all_se  [i] = stats.sem(ws['accu'])/math.sqrt(args.nsubjs) 
+    acc_tmp = []
+    for order in range(2):
+      exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
+      opt_folder  = algo['nfeature']+'feat/identity/all/'
+      ws = np.load(working_path + exp_folder+ algo_folder + opt_folder + filename) 
+      acc_tmp.append(ws['accu'])
+    acc_tmp = np.concatenate((acc_tmp[0], acc_tmp[1]))
+    all_mean[i] = np.mean(acc_tmp)
+    all_se  [i] = stats.sem(acc_tmp)/math.sqrt(args.nsubjs) 
   else:
     acc_tmp = []
-    for rnd in range(args.nrand):
-      opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
-      ws = np.load(working_path + algo_folder + opt_folder + filename) 
-      acc_tmp.append(ws['accu'])
+    for order in range(2):
+      for rnd in range(args.nrand):
+        exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
+        opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
+        ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
+        acc_tmp.append(ws['accu'])
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 
@@ -137,6 +151,6 @@ autolabel(rects)
 #plt.text(.12, .05, 'Movie Segment Classification', horizontalalignment='left', verticalalignment='bottom')
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'imgpred_'+ args.niter+'th_iter']
+                'mysseg_'+ args.niter+'th_iter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 

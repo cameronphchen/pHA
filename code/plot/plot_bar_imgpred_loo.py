@@ -12,6 +12,8 @@ parser.add_argument("nvoxel",
                     help="number of voxels in the dataset")
 parser.add_argument("nTR", 
                     help="number of TRs in the dataset")
+parser.add_argument("nsubjs"     , type = int,  
+                    help="number of subjects in the dataset")
 parser.add_argument("niter"     ,   
                     help="number of iterations to the algorithm")
 parser.add_argument("nrand"     , type = int,  
@@ -61,7 +63,6 @@ name = []
 for algo in algo_list:
   name.append(algo['name'])
 
-
 all_mean = np.zeros((len(name)))
 all_se   = np.zeros((len(name)))
 
@@ -77,18 +78,22 @@ for i in range(len(algo_list)):
   filename    = algo['align_algo']+'_acc_'+args.niter +'.npz'
 
   if algo['rand'] == False:
-    opt_folder  = algo['nfeature']+'feat/identity/all/'
-    ws = np.load(working_path + algo_folder + opt_folder + filename) 
+    acc_tmp=[]
+    for loo in range(args.nsubjs):
+      opt_folder  = algo['nfeature']+'feat/identity/loo'+str(loo)+'/'
+      ws = np.load(working_path + algo_folder + opt_folder + filename) 
+      acc_tmp.append(ws['accu'])
     all_mean[i] = np.mean(ws['accu'])
-    all_se  [i] = stats.sem(ws['accu']) 
+    all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
   else:
     acc_tmp = []
     for rnd in range(args.nrand):
-      opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
-      ws = np.load(working_path + algo_folder + opt_folder + filename) 
-      acc_tmp.append(ws['accu'])
+      for loo in range(args.nsubjs):
+        opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/loo'+str(loo)+'/'
+        ws = np.load(working_path + algo_folder + opt_folder + filename) 
+        acc_tmp.append(ws['accu'])
     all_mean[i] = np.mean(acc_tmp)
-    all_se  [i] = np.std(acc_tmp)/math.sqrt(len(ws['accu'])-1)
+    all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 
 # set font size
 font = {'family' : 'serif',
@@ -122,7 +127,7 @@ autolabel(rects)
 #plt.text(.12, .05, 'Movie Segment Classification', horizontalalignment='left', verticalalignment='bottom')
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'imgpred'+ args.niter+'th_iter']
+                'imgpred_loo_'+ args.niter+'th_iter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 
 #                args.exptype+('_winsize'+str(args.winsize) if args.winsize else ""),\

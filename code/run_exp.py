@@ -153,9 +153,7 @@ else:
   sys.exit('invalid experiment type')
 
 
-
-
-if not args.loo == None:
+if args.loo != None:
   align_data_lh_loo = np.delete(align_data_lh, args.loo,2) 
   align_data_rh_loo = np.delete(align_data_rh, args.loo,2)
 

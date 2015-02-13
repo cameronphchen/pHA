@@ -51,9 +51,6 @@ def predict_loo(transformed_data, args, trn_label ,tst_label):
   for m in range(len(loo_idx)):
     trn_data[:,m*nsample:(m+1)*nsample] = transformed_data[:,:,loo_idx[m]]
   
-  print trn_data
-  print tst_data
-
   # scikit-learn svm for classification
   clf = NuSVC(nu=0.5, kernel = 'linear')
   clf.fit(trn_data.T, trn_label)

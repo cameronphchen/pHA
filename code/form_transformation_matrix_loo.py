@@ -17,7 +17,7 @@ def form_transformation_matrix_loo(args, workspace_lh ,workspace_rh, align_data_
   if args.align_algo in ['ha']:
     bW_lh = workspace_lh['R']
     bW_rh = workspace_rh['R']
-    for m in range(bW_lh.shape[2]):
+    for m in range(nsubjs-1):
       transform_lh[:,:,loo_idx[m]] = bW_lh[:,:,m]
       transform_rh[:,:,loo_idx[m]] = bW_rh[:,:,m]
     # find transform_lh[:,:,loo], transform_rh[:,:,loo]
@@ -29,7 +29,7 @@ def form_transformation_matrix_loo(args, workspace_lh ,workspace_rh, align_data_
   elif args.align_algo in ['pha_em','spha_vi']:
     bW_lh = workspace_lh['bW']
     bW_rh = workspace_rh['bW']
-    for m in range(bW_lh.shape[2]):
+    for m in range(nsubjs-1):
       transform_lh[:,:,loo_idx[m]] = bW_lh[m*args.nvoxel:(m+1)*args.nvoxel,:]
       transform_rh[:,:,loo_idx[m]] = bW_rh[m*args.nvoxel:(m+1)*args.nvoxel,:]
     # find transform_lh[:,:,loo], transform_rh[:,:,loo]

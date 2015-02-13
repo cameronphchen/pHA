@@ -58,10 +58,10 @@ niter_unit = para['niter_unit']
 print 'loo:'+loo
 # load experiment options
 # rondo options
-options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data/input/', \
-           'working_path': '/fastscratch/pohsuan/pHA/data/working/'+str(para['nTR'])+'TR/rand'+str(para['ranNum'])+'/',\
-           'data_path'   : '/jukebox/ramadge/pohsuan/pHA/data/working/'+str(para['nTR'])+'TR/',\
-           'output_path' : '/jukebox/ramadge/pohsuan/pHA/data/output/'+str(para['nTR'])+'TR/'}
+options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data_old/input/', \
+           'working_path': '/fastscratch/pohsuan/pHA/data_old/working/'+str(para['nTR'])+'TR/rand'+str(para['ranNum'])+'/',\
+           'data_path'   : '/jukebox/ramadge/pohsuan/pHA/data_old/working/'+str(para['nTR'])+'TR/',\
+           'output_path' : '/jukebox/ramadge/pohsuan/pHA/data_old/output/'+str(para['nTR'])+'TR/'}
 
 # local options
 #options = {'input_path'  : '/Volumes/ramadge/pohsuan/pHA/data/input/', \

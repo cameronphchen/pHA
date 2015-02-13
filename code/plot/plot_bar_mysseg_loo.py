@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 import math
 import sys
+import itertools
 
 parser = argparse.ArgumentParser()
 parser.add_argument("dataset",    help="name of the dataset")
@@ -73,6 +74,7 @@ algo = {
   'rand': True
 }
 algo_list.append(algo)
+
 ###############################################################################
 
 name = []
@@ -98,12 +100,13 @@ for i in range(len(algo_list)):
 
   if algo['rand'] == False:
     acc_tmp = []
-    for order in range(2):
-      exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
-      opt_folder  = algo['nfeature']+'feat/identity/all/'
-      ws = np.load(working_path + exp_folder+ algo_folder + opt_folder + filename) 
-      acc_tmp.append(ws['accu'])
-    acc_tmp = np.concatenate((acc_tmp[0], acc_tmp[1]))
+    for loo in range(args.nsubjs):
+      for order in range(2):
+        exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
+        opt_folder  = algo['nfeature']+'feat/identity/loo'+str(loo)+'/'
+        ws = np.load(working_path + exp_folder+ algo_folder + opt_folder + filename) 
+        acc_tmp.append(ws['accu'])
+    #acc_tmp = list(itertools.chain.from_iterable(acc_tmp))
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = stats.sem(acc_tmp)/math.sqrt(args.nsubjs) 
   else:
@@ -111,7 +114,7 @@ for i in range(len(algo_list)):
     for order in range(2):
       for rnd in range(args.nrand):
         exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
-        opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
+        opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/loo'+str(loo)+'/'
         ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
         acc_tmp.append(ws['accu'])
     all_mean[i] = np.mean(acc_tmp)
@@ -149,6 +152,6 @@ autolabel(rects)
 #plt.text(.12, .05, 'Movie Segment Classification', horizontalalignment='left', verticalalignment='bottom')
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'mysseg_'+ args.niter+'th_iter']
+                'mysseg_loo_'+ args.niter+'th_iter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 

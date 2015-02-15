@@ -8,10 +8,10 @@ dataset = 'raider'
 nTR = str2num(nTR_str)
 nvoxel = str2num(nvoxel_str)
 
-load /jukebox/ramadge/pohsuan/pHA/data_v2/raw/raider/movie_data_princeton;
-load /jukebox/ramadge/pohsuan/pHA/data_v2/raw/raider/vt_masks_lhrh;
-load /jukebox/ramadge/pohsuan/pHA/data_v2/raw/raider/monkeydog_timeaveraged_data.mat
-load /jukebox/ramadge/pohsuan/pHA/data_v2/raw/raider/block_labels.txt
+load /jukebox/ramadge/pohsuan/pHA/data/raw/raider/movie_data_princeton;
+load /jukebox/ramadge/pohsuan/pHA/data/raw/raider/vt_masks_lhrh;
+load /jukebox/ramadge/pohsuan/pHA/data/raw/raider/monkeydog_timeaveraged_data.mat
+load /jukebox/ramadge/pohsuan/pHA/data/raw/raider/block_labels.txt
 
 for subj_index = 1:size(movie_data_raw_despiked,1)
     mv_data = movie_data_raw_despiked{subj_index,1};

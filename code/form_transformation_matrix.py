@@ -2,7 +2,7 @@
 
 import numpy as np
 
-def form_transformation_matrix(args, workspace_lh ,workspace_rh, nsubjs):
+def form_transformation_matrix(args, workspace_lh,workspace_rh, nsubjs):
   transform_lh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
   transform_rh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
 

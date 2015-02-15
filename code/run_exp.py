@@ -19,6 +19,7 @@ import importlib
 import pprint
 from form_transformation_matrix import form_transformation_matrix
 from form_transformation_matrix_loo import form_transformation_matrix_loo
+from form_transformation_matrix_noalign import form_transformation_matrix_noalign
 
 ## argument parsing
 usage = '%(prog)s dataset nvoxel nTR  exptype [--loo] [--expopt] [--winsize] \
@@ -167,34 +168,35 @@ assert nsubjs_pred == nsubjs_align or args.loo
 
 # run alignment
 print 'start alignment'
-algo = importlib.import_module('alignment_algo.'+args.align_algo)
+if args.align_algo != 'noalign':
+  algo = importlib.import_module('alignment_algo.'+args.align_algo)
 expt = importlib.import_module('experiments.'+args.exptype)
 for i in range(args.niter):
-  if args.align_algo == 'noalgin':
-    continue
-  elif args.loo == None:
-    new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
-    new_niter_rh = algo.align(align_data_rh, options, args, 'rh')
-  else:
-    new_niter_lh = algo.align(align_data_lh_loo, options, args, 'lh')
-    new_niter_rh = algo.align(align_data_rh_loo, options, args, 'rh')
-
-  # make sure right and left brain alignment are working at the same iterations
-  assert new_niter_lh == new_niter_rh
+  new_niter_lh = new_niter_rh = 0
+  if args.align_algo != 'noalign':
+    if args.loo == None:
+      new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
+      new_niter_rh = algo.align(align_data_rh, options, args, 'rh')
+    else:
+      new_niter_lh = algo.align(align_data_lh_loo, options, args, 'lh')
+      new_niter_rh = algo.align(align_data_rh_loo, options, args, 'rh')
+    # make sure right and left brain alignment are working at the same iterations
+    assert new_niter_lh == new_niter_rh
 
   # load transformation matrices
   if args.align_algo != 'noalign' :
     workspace_lh = np.load(options['working_path']+args.align_algo+'_lh_'+str(new_niter_lh)+'.npz')
     workspace_rh = np.load(options['working_path']+args.align_algo+'_rh_'+str(new_niter_rh)+'.npz')
-
-  # load transformation matrices into transform_lrh for projecting testing data
-  if args.loo == None:
-    (transform_lh, transform_rh) = form_transformation_matrix(args, 
+    # load transformation matrices into transform_lrh for projecting testing data
+    if args.loo == None:
+      (transform_lh, transform_rh) = form_transformation_matrix(args, 
                                      workspace_lh, workspace_rh, nsubjs)
-  else:
-    (transform_lh, transform_rh) = form_transformation_matrix_loo(args, 
+    else:
+      (transform_lh, transform_rh) = form_transformation_matrix_loo(args, 
                                      workspace_lh, workspace_rh, 
                                      align_data_lh, align_data_rh, nsubjs)
+  else:
+    (transform_lh, transform_rh)=form_transformation_matrix_noalign(args,nsubjs)
 
   # transformed mkdg data with learned transformation matrices
   transformed_data = np.zeros((args.nfeature*2 , nTR_pred ,nsubjs))

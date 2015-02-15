@@ -2,6 +2,14 @@ import pickle
 
 algo_list = []
 
+algo = {'name': 'noalign',
+  'align_algo': 'noalign',
+  'nfeature': '1300',
+  'kernel': None,
+  'rand': False
+}
+algo_list.append(algo)
+
 algo = {'name': 'HA',
   'align_algo': 'ha',
   'nfeature': '1300',

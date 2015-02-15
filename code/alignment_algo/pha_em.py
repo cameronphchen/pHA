@@ -28,9 +28,7 @@ def align(movie_data, options, args, lrh):
   nfeature = args.nfeature
   align_algo = args.align_algo
 
-
   current_file = options['working_path']+align_algo+'_'+lrh+'_current.npz'
-
   # zscore the data
   bX = np.zeros((nsubjs*nvoxel,nTR))
   for m in range(nsubjs):
@@ -77,23 +75,36 @@ def align(movie_data, options, args, lrh):
 
   # remove mean
   bX = bX - bX.mean(axis=1)[:,np.newaxis]
+  #print 'bX'
+  #print bX
 
   print str(niter+1)+'th',
-
+ 
   bSig_x = np.zeros((nvoxel*nsubjs,nvoxel*nsubjs))
   bSig_x = bW.dot(bSig_s).dot(bW.T)
+
   for m in range(nsubjs):
     bSig_x[m*nvoxel:(m+1)*nvoxel,m*nvoxel:(m+1)*nvoxel] += sigma2[m]*np.identity(nvoxel)
+  #print 'bSig_x'
+  #print bSig_x
 
   inv_bSig_x = scipy.linalg.inv(bSig_x)
   ES = bSig_s.T.dot(bW.T).dot(inv_bSig_x).dot(bX)
   bSig_s = bSig_s - bSig_s.T.dot(bW.T).dot(inv_bSig_x).dot(bW).dot(bSig_s) + ES.dot(ES.T)/float(nTR)
 
   for m in range(nsubjs):
-    print('.'),
+    print ('.'),
     sys.stdout.flush()
     Am = bX[m*nvoxel:(m+1)*nvoxel,:].dot(ES.T)
-    Um, sm, Vm = np.linalg.svd(Am,full_matrices=0)
+    pert = np.zeros((Am.shape))
+    np.fill_diagonal(pert,1)
+    #print 'Am'
+    #print Am+0.001*pert
+    Um, sm, Vm = np.linalg.svd(Am+0.001*pert,full_matrices=0)
+    #print 'Um'
+    #print Um
+    #print 'Vm'
+    #print Vm
     bW[m*nvoxel:(m+1)*nvoxel,:] = Um.dot(Vm)
     sigma2[m] =    np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bX[m*nvoxel:(m+1)*nvoxel,:]))\
                   -2*np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bW[m*nvoxel:(m+1)*nvoxel,:]).dot(ES))\

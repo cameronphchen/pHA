@@ -8,13 +8,13 @@ chmod +x run_exp.py
 for loo in $(seq 0 9)
 do
 #  submit_long run_exp.py raider 1300 2203 imgpred --loo $loo ha 10 1300 --strfresh
-  submit_long run_exp.py raider 1300 2203 imgpred --loo $loo pha_em 10 1300 --strfresh
-done
-#  for nfeat in 10  50 100 500 1300
-#  do
-#    for rand in $(seq 0 4)
-#    do
-#      submit_long run_exp.py raider 1300 2203 imgpred --loo $loo pha_em 10 $nfeat -r $rand --strfresh
-#    done
-#  done
+#  submit_long run_exp.py raider 1300 2203 imgpred --loo $loo pha_em 10 1300 --strfresh
 #done
+  for nfeat in 10  50 100 500 1300
+  do
+    for rand in $(seq 0 4)
+    do
+      submit_long run_exp.py raider 1300 2203 imgpred --loo $loo pha_em 10 $nfeat -r $rand --strfresh
+    done
+  done
+done

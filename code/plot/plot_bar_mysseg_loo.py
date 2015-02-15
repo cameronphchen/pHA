@@ -7,6 +7,8 @@ from scipy import stats
 import math
 import sys
 import itertools
+import pickle
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("dataset",    help="name of the dataset")
@@ -29,51 +31,10 @@ pprint.pprint(args.__dict__,width=1)
 
 #####################List out all the algos to show in fig#####################
 
-algo_list = []
-
-algo = {'name': 'HA',
-  'align_algo': 'ha',
-  'nfeature': '1300',
-  'kernel': None,
-  'rand': False
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHA 50',
-  'align_algo': 'pha_em',
-  'nfeature': '50',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHA 100',
-  'align_algo': 'pha_em',
-  'nfeature': '100',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHA 500',
-  'align_algo': 'pha_em',
-  'nfeature': '500',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHA 1300',
-  'align_algo': 'pha_em',
-  'nfeature': '1300',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
+os.system("python create_algo_list.py")
+pkl_file = open('algo_list.pkl', 'rb')
+algo_list = pickle.load(pkl_file)
+pkl_file.close()
 
 ###############################################################################
 
@@ -111,12 +72,13 @@ for i in range(len(algo_list)):
     all_se  [i] = stats.sem(acc_tmp)/math.sqrt(args.nsubjs) 
   else:
     acc_tmp = []
-    for order in range(2):
-      for rnd in range(args.nrand):
-        exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
-        opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/loo'+str(loo)+'/'
-        ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
-        acc_tmp.append(ws['accu'])
+    for loo in range(args.nsubjs):
+      for order in range(2):
+        for rnd in range(args.nrand):
+          exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
+          opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/loo'+str(loo)+'/'
+          ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
+          acc_tmp.append(ws['accu'])
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 

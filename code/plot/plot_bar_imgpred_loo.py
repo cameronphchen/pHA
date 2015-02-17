@@ -72,7 +72,7 @@ for i in range(len(algo_list)):
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 5}
+        'size'   : 12}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)

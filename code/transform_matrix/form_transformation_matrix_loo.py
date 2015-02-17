@@ -3,7 +3,7 @@
 import numpy as np
 from scipy import stats
 
-def form_transformation_matrix_loo(args, workspace_lh ,workspace_rh, align_data_lh, align_data_rh, nsubjs):
+def transform(args, workspace_lh ,workspace_rh, align_data_lh, align_data_rh, nsubjs):
   transform_lh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
   transform_rh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
   

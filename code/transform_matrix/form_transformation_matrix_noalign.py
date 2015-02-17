@@ -2,7 +2,7 @@
 
 import numpy as np
 
-def form_transformation_matrix_noalign(args, nsubjs):
+def transform(args, nsubjs):
   transform_lh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
   transform_rh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
 

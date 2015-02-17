@@ -17,9 +17,9 @@ import argparse
 from scikits.learn.svm import NuSVC
 import importlib
 import pprint
-from form_transformation_matrix import form_transformation_matrix
-from form_transformation_matrix_loo import form_transformation_matrix_loo
-from form_transformation_matrix_noalign import form_transformation_matrix_noalign
+from transform_matrix import form_transformation_matrix, \
+                             form_transformation_matrix_loo, \
+                             form_transformation_matrix_noalign
 
 ## argument parsing
 usage = '%(prog)s dataset nvoxel nTR  exptype [--loo] [--expopt] [--winsize] \
@@ -172,7 +172,7 @@ if args.align_algo != 'noalign':
   algo = importlib.import_module('alignment_algo.'+args.align_algo)
 expt = importlib.import_module('experiments.'+args.exptype)
 for i in range(args.niter):
-  new_niter_lh = new_niter_rh = 0
+  
   if args.align_algo != 'noalign':
     if args.loo == None:
       new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
@@ -189,14 +189,15 @@ for i in range(args.niter):
     workspace_rh = np.load(options['working_path']+args.align_algo+'_rh_'+str(new_niter_rh)+'.npz')
     # load transformation matrices into transform_lrh for projecting testing data
     if args.loo == None:
-      (transform_lh, transform_rh) = form_transformation_matrix(args, 
+      (transform_lh, transform_rh) = form_transformation_matrix.transform(args, 
                                      workspace_lh, workspace_rh, nsubjs)
     else:
-      (transform_lh, transform_rh) = form_transformation_matrix_loo(args, 
+      (transform_lh, transform_rh) = form_transformation_matrix_loo.transform(args, 
                                      workspace_lh, workspace_rh, 
                                      align_data_lh, align_data_rh, nsubjs)
   else:
-    (transform_lh, transform_rh)=form_transformation_matrix_noalign(args,nsubjs)
+    new_niter_lh = new_niter_rh = 10
+    (transform_lh, transform_rh)=form_transformation_matrix_noalign.transform(args,nsubjs)
 
   # transformed mkdg data with learned transformation matrices
   transformed_data = np.zeros((args.nfeature*2 , nTR_pred ,nsubjs))

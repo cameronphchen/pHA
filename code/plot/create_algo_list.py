@@ -28,45 +28,9 @@ algo = {
 algo_list.append(algo)
 
 algo = {
-  'name': 'pHA 10',
-  'align_algo': 'pha_em',
-  'nfeature': '10',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
   'name': 'pHA 50',
   'align_algo': 'pha_em',
   'nfeature': '50',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHA 100',
-  'align_algo': 'pha_em',
-  'nfeature': '100',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHA 500',
-  'align_algo': 'pha_em',
-  'nfeature': '500',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHA 1300',
-  'align_algo': 'pha_em',
-  'nfeature': '1300',
   'kernel': None,
   'rand': True
 }

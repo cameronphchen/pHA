@@ -2,13 +2,13 @@ import pickle
 
 algo_list = []
 
-algo = {'name': 'noalign',
-  'align_algo': 'noalign',
-  'nfeature': '1300',
-  'kernel': None,
-  'rand': False
-}
-algo_list.append(algo)
+#algo = {'name': 'noalign',
+#  'align_algo': 'noalign',
+#  'nfeature': '1300',
+#  'kernel': None,
+#  'rand': False
+#}
+#algo_list.append(algo)
 
 algo = {'name': 'HA',
   'align_algo': 'ha',
@@ -31,6 +31,15 @@ algo = {
   'name': 'pHA 50',
   'align_algo': 'pha_em',
   'nfeature': '50',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pHA 1300',
+  'align_algo': 'pha_em',
+  'nfeature': '1300',
   'kernel': None,
   'rand': True
 }

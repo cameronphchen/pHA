@@ -2,7 +2,7 @@
 
 % please put compute_voxel_ranks.m under the same directory
 nTR_str = '3535'
-nvoxel_str = '1300'
+nvoxel_str = '500'
 dataset = 'forrest_pt'
 
 nTR = str2num(nTR_str)

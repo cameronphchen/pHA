@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # plot barchart for image prediction across different algorithms  
 import pprint
 import argparse
@@ -67,7 +68,7 @@ for i in range(len(algo_list)):
       acc_tmp.append(ws['accu'])
     acc_tmp = np.concatenate((acc_tmp[0], acc_tmp[1]))
     all_mean[i] = np.mean(acc_tmp)
-    all_se  [i] = stats.sem(acc_tmp)/math.sqrt(args.nsubjs) 
+    all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
   else:
     acc_tmp = []
     for order in range(2):
@@ -95,7 +96,6 @@ rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_confi
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 plt.xlabel('Alignment Methods')
-plt.xlim([-0.6,5.6])
 plt.ylim([0,1])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
@@ -110,7 +110,9 @@ def autolabel(rects):
 autolabel(rects)
 #plt.text(.12, .05, 'Movie Segment Classification', horizontalalignment='left', verticalalignment='bottom')
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
+plt.title('Movie Segment ({}TRs) Classification {} {}vx {}TRs'.format(args.winsize, args.dataset.replace('_','-') ,args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'mysseg_'+ args.niter+'th_iter']
+                'mysseg_'+ args.niter+'thIter']
+print '_'.join(filename_list) 
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 

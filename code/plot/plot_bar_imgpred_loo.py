@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # plot barchart for image prediction across different algorithms  
 import pprint
 import argparse
@@ -86,7 +87,6 @@ rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_confi
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 plt.xlabel('Alignment Methods')
-plt.xlim([-0.6,5.6])
 plt.ylim([0,1])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
@@ -99,10 +99,10 @@ def autolabel(rects):
                 ha='center', va='bottom')
 
 autolabel(rects)
-#plt.text(.12, .05, 'Movie Segment Classification', horizontalalignment='left', verticalalignment='bottom')
-#plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
+#plt.text(.12, .05, 'Image Category Prediction', horizontalalignment='right', verticalalignment='top')
+plt.title('Image Stimulus Prediction LOO {} {}vx {}TRs'.format(args.dataset.replace('_','-'),args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'imgpred_loo_'+ args.niter+'th_iter']
+                'imgpred_loo_'+ args.niter+'thIter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 
 #                args.exptype+('_winsize'+str(args.winsize) if args.winsize else ""),\

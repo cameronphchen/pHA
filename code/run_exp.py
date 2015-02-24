@@ -97,6 +97,11 @@ if args.strfresh:
   if os.path.exists(options['working_path']+args.align_algo+'_lh_current.npz'):
     os.remove(options['working_path']+args.align_algo+'_lh_current.npz')
 
+# terminate the experiment early if the experiment is already done
+if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
+  sys.exit('experiment already finished, early termination')
+
+
 print 'start loading data'
 # load data for alignment and prediction
 # load movie data after voxel selection by matdata_preprocess.m 

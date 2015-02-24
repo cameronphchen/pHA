@@ -82,12 +82,12 @@ for i in range(len(algo_list)):
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 12}
+        'size'   : 10}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-aspectratio=4
+aspectratio=4.5
 idx = range(len(algo_list))
 
 plt.figure()
@@ -112,7 +112,6 @@ autolabel(rects)
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
 plt.title('Movie Segment ({}TRs) Classification {} {}vx {}TRs'.format(args.winsize, args.dataset.replace('_','-') ,args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'mysseg_'+ args.niter+'thIter']
-print '_'.join(filename_list) 
+                'mysseg', str(args.winsize)+'winsize' , args.niter+'thIter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 

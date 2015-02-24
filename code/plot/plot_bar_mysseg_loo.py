@@ -68,6 +68,7 @@ for i in range(len(algo_list)):
         opt_folder  = algo['nfeature']+'feat/identity/loo'+str(loo)+'/'
         ws = np.load(working_path + exp_folder+ algo_folder + opt_folder + filename) 
         acc_tmp.append(ws['accu'])
+        ws.close()
     #acc_tmp = list(itertools.chain.from_iterable(acc_tmp))
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
@@ -80,17 +81,18 @@ for i in range(len(algo_list)):
           opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/loo'+str(loo)+'/'
           ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
           acc_tmp.append(ws['accu'])
+          ws.close()
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 12}
+        'size'   : 10}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-aspectratio=4
+aspectratio=4.5
 idx = range(len(algo_list))
 
 plt.figure()
@@ -115,6 +117,6 @@ autolabel(rects)
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
 plt.title('Movie Segment ({}TRs) Classification LOO {} {}vx {}TRs'.format(args.winsize, args.dataset.replace('_','-'),args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'mysseg_loo_'+ args.niter+'thIter']
+                'mysseg_loo', str(args.winsize)+'winsize' , args.niter+'thIter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 

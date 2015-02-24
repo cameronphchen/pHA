@@ -73,6 +73,97 @@ algo = {
 }
 algo_list.append(algo)
 
+algo = {
+  'name': 'pHAc 10',
+  'align_algo': 'ha_syn',
+  'nfeature': '10',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pHAc 50',
+  'align_algo': 'ha_syn',
+  'nfeature': '50',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pHAc 100',
+  'align_algo': 'ha_syn',
+  'nfeature': '100',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pHAc 500',
+  'align_algo': 'ha_syn',
+  'nfeature': '500',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pHAc 1300',
+  'align_algo': 'ha_syn',
+  'nfeature': '1300',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pPCA 10',
+  'align_algo': 'ppca',
+  'nfeature': '10',
+  'kernel': None,
+  'rand': False
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pPCA 50',
+  'align_algo': 'ppca',
+  'nfeature': '50',
+  'kernel': None,
+  'rand': False
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pPCA 100',
+  'align_algo': 'ppca',
+  'nfeature': '100',
+  'kernel': None,
+  'rand': False
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pPCA 500',
+  'align_algo': 'ppca',
+  'nfeature': '500',
+  'kernel': None,
+  'rand': False
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pPCA 1300',
+  'align_algo': 'ppca',
+  'nfeature': '1300',
+  'kernel': None,
+  'rand': False
+}
+algo_list.append(algo)
+
+
 # write python dict to a file
 output = open('algo_list.pkl', 'wb')
 pickle.dump(algo_list, output)

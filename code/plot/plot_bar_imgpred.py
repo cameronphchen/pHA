@@ -70,12 +70,12 @@ for i in range(len(algo_list)):
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 12}
+        'size'   : 10}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-aspectratio=4
+aspectratio=4.5
 idx = range(len(algo_list))
 
 plt.figure()

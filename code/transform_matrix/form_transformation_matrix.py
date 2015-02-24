@@ -6,7 +6,7 @@ def transform(args, workspace_lh,workspace_rh, nsubjs):
   transform_lh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
   transform_rh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
 
-  if args.align_algo in ['ha']:
+  if args.align_algo in ['ha','ha_syn']:
     transform_lh = workspace_lh['R']
     transform_rh = workspace_rh['R']
   elif args.align_algo in ['pha_em','spha_vi']:

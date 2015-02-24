@@ -1,3 +1,4 @@
+
 algo = {'name': 'noalign',
   'align_algo': 'noalign',
   'nfeature': '1300',
@@ -22,6 +23,7 @@ algo = {
   'rand': False
 }
 algo_list.append(algo)
+
 
 algo = {
   'name': 'pHA 10',
@@ -67,3 +69,49 @@ algo = {
   'rand': True
 }
 algo_list.append(algo)
+
+algo = {
+  'name': 'ha syn 10',
+  'align_algo': 'ha_syn',
+  'nfeature': '10',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'ha syn 50',
+  'align_algo': 'ha_syn',
+  'nfeature': '50',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'ha syn 100',
+  'align_algo': 'ha_syn',
+  'nfeature': '100',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'ha syn 500',
+  'align_algo': 'ha_syn',
+  'nfeature': '500',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'ha syn 1300',
+  'align_algo': 'ha_syn',
+  'nfeature': '1300',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+

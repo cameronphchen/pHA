@@ -99,4 +99,116 @@ sg7
 S'pHA 1300'
 p28
 sg8
+Nsa(dp29
+g2
+S'ha_syn'
+p30
+sg4
+I01
+sg5
+g16
+sg7
+S'pHAc 10'
+p31
+sg8
+Nsa(dp32
+g2
+g30
+sg4
+I01
+sg5
+g19
+sg7
+S'pHAc 50'
+p33
+sg8
+Nsa(dp34
+g2
+g30
+sg4
+I01
+sg5
+g22
+sg7
+S'pHAc 100'
+p35
+sg8
+Nsa(dp36
+g2
+g30
+sg4
+I01
+sg5
+g25
+sg7
+S'pHAc 500'
+p37
+sg8
+Nsa(dp38
+g2
+g30
+sg4
+I01
+sg5
+g6
+sg7
+S'pHAc 1300'
+p39
+sg8
+Nsa(dp40
+g2
+S'ppca'
+p41
+sg4
+I00
+sg5
+g16
+sg7
+S'pPCA 10'
+p42
+sg8
+Nsa(dp43
+g2
+g41
+sg4
+I00
+sg5
+g19
+sg7
+S'pPCA 50'
+p44
+sg8
+Nsa(dp45
+g2
+g41
+sg4
+I00
+sg5
+g22
+sg7
+S'pPCA 100'
+p46
+sg8
+Nsa(dp47
+g2
+g41
+sg4
+I00
+sg5
+g25
+sg7
+S'pPCA 500'
+p48
+sg8
+Nsa(dp49
+g2
+g41
+sg4
+I00
+sg5
+g6
+sg7
+S'pPCA 1300'
+p50
+sg8
 Nsa.

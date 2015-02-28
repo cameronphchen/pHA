@@ -59,18 +59,20 @@ for i in range(len(algo_list)):
     ws = np.load(working_path + algo_folder + opt_folder + filename) 
     all_mean[i] = np.mean(ws['accu'])
     all_se  [i] = np.std(ws['accu'])/math.sqrt(args.nsubjs) 
+    ws.close()
   else:
     acc_tmp = []
     for rnd in range(args.nrand):
       opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
       ws = np.load(working_path + algo_folder + opt_folder + filename) 
       acc_tmp.append(ws['accu'])
+      ws.close()
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 10}
+        'size'   : 5}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)

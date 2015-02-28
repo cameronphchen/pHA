@@ -80,7 +80,7 @@ def align(movie_data, options, args, lrh):
 
   print str(niter+1)+'th',
  
-  bSig_x = np.zeros((nvoxel*nsubjs,nvoxel*nsubjs))
+  #bSig_x = np.zeros((nvoxel*nsubjs,nvoxel*nsubjs))
   bSig_x = bW.dot(bSig_s).dot(bW.T)
 
   for m in range(nsubjs):

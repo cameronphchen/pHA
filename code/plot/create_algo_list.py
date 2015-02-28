@@ -73,6 +73,7 @@ algo = {
 }
 algo_list.append(algo)
 
+
 algo = {
   'name': 'pHAc 10',
   'align_algo': 'ha_syn',
@@ -115,51 +116,6 @@ algo = {
   'nfeature': '1300',
   'kernel': None,
   'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pPCA 10',
-  'align_algo': 'ppca',
-  'nfeature': '10',
-  'kernel': None,
-  'rand': False
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pPCA 50',
-  'align_algo': 'ppca',
-  'nfeature': '50',
-  'kernel': None,
-  'rand': False
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pPCA 100',
-  'align_algo': 'ppca',
-  'nfeature': '100',
-  'kernel': None,
-  'rand': False
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pPCA 500',
-  'align_algo': 'ppca',
-  'nfeature': '500',
-  'kernel': None,
-  'rand': False
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pPCA 1300',
-  'align_algo': 'ppca',
-  'nfeature': '1300',
-  'kernel': None,
-  'rand': False
 }
 algo_list.append(algo)
 

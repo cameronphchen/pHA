@@ -66,6 +66,7 @@ for i in range(len(algo_list)):
       opt_folder  = algo['nfeature']+'feat/identity/all/'
       ws = np.load(working_path + exp_folder+ algo_folder + opt_folder + filename) 
       acc_tmp.append(ws['accu'])
+      ws.close()
     acc_tmp = np.concatenate((acc_tmp[0], acc_tmp[1]))
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
@@ -77,12 +78,13 @@ for i in range(len(algo_list)):
         opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
         ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
         acc_tmp.append(ws['accu'])
+        ws.close()
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 10}
+        'size'   : 5}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)

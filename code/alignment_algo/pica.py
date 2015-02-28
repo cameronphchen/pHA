@@ -46,11 +46,11 @@ def align(movie_data, options, args, lrh):
   np.random.seed(randseed)
   A = np.mat(np.random.random((nfeature,nfeature)))
 
-  ica = FastICA(n_components= nfeature, max_iter=200,w_init=A,random_state=randseed)
+  ica = FastICA(n_components= nfeature, max_iter=500,w_init=A,random_state=randseed)
   ica.fit(bX.T)
   R = ica.transform(bX.T)
 
-  niter = 1  
+  niter = 10  
   # initialization when first time run the algorithm
   np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(niter)+'.npz',\
                                 R = R,  niter=niter)

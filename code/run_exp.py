@@ -188,6 +188,10 @@ for i in range(args.niter):
     # make sure right and left brain alignment are working at the same iterations
     assert new_niter_lh == new_niter_rh
 
+
+  if args.align_algo in ['pica','ppca']:
+    new_niter_lh = new_niter_rh = 10
+
   # load transformation matrices
   if args.align_algo != 'noalign' :
     workspace_lh = np.load(options['working_path']+args.align_algo+'_lh_'+str(new_niter_lh)+'.npz')

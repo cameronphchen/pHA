@@ -59,6 +59,7 @@ for i in range(len(algo_list)):
       opt_folder  = algo['nfeature']+'feat/identity/loo'+str(loo)+'/'
       ws = np.load(working_path + algo_folder + opt_folder + filename) 
       acc_tmp.append(ws['accu'])
+      ws.close()
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
   else:
@@ -68,12 +69,13 @@ for i in range(len(algo_list)):
         opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/loo'+str(loo)+'/'
         ws = np.load(working_path + algo_folder + opt_folder + filename) 
         acc_tmp.append(ws['accu'])
+        ws.close()
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 10}
+        'size'   : 12}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
@@ -86,7 +88,8 @@ error_config = {'ecolor': '0'}
 rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_config)
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
-plt.xlabel('Alignment Methods')
+#plt.xlabel('Alignment Methods')
+plt.xlim([-1,13])
 plt.ylim([0,1])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)

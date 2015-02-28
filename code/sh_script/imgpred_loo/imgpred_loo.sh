@@ -13,10 +13,10 @@ do
 #done
   for nfeat in 10  50 100 500 1300
   do
-    submit_long run_exp.py raider 1300 2203 imgpred --loo $loo ppca 10 $nfeat --strfresh
-    #for rand in $(seq 0 4)
-    #do
-    #  submit_long run_exp.py raider 1300 2203 imgpred --loo $loo ha_syn 10 $nfeat -r $rand --strfresh
-    #done
+    #submit_long run_exp.py raider 1300 2203 imgpred --loo $loo ppca 10 $nfeat --strfresh
+    for rand in $(seq 0 4)
+    do
+      submit run_exp.py raider 1300 2203 imgpred --loo $loo pica 10 $nfeat -r $rand --strfresh
+    done
   done
 done

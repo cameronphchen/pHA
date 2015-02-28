@@ -47,7 +47,7 @@ def align(movie_data, options, args, lrh):
   V = VT.T
 
   R = V[:,range(nfeature)]
-  niter = 1  
+  niter = 10 
   # initialization when first time run the algorithm
   np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(niter)+'.npz',\
                                 R = R,  niter=niter)

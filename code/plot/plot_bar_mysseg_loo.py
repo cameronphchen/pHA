@@ -53,6 +53,7 @@ onetwo = ['1st','2nd']
 
 working_path = '/fastscratch/pohsuan/pHA/data/working/'+data_folder
 output_path  = '/jukebox/ramadge/pohsuan/pHA/data/output/'
+missing_file = False
 
 for i in range(len(algo_list)):
   algo = algo_list[i]
@@ -66,9 +67,13 @@ for i in range(len(algo_list)):
       for order in range(2):
         exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
         opt_folder  = algo['nfeature']+'feat/identity/loo'+str(loo)+'/'
-        ws = np.load(working_path + exp_folder+ algo_folder + opt_folder + filename) 
-        acc_tmp.append(ws['accu'])
-        ws.close()
+        if not os.path.exists(working_path + exp_folder+ algo_folder + opt_folder + filename):
+            print 'NO '+working_path + exp_folder+ algo_folder + opt_folder + filename
+            missing_file = True
+        else:
+            ws = np.load(working_path + exp_folder+ algo_folder + opt_folder + filename) 
+            acc_tmp.append(ws['accu'])
+            ws.close()
     #acc_tmp = list(itertools.chain.from_iterable(acc_tmp))
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
@@ -79,11 +84,18 @@ for i in range(len(algo_list)):
         for rnd in range(args.nrand):
           exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
           opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/loo'+str(loo)+'/'
-          ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
-          acc_tmp.append(ws['accu'])
-          ws.close()
+          if not os.path.exists(working_path + exp_folder+ algo_folder + opt_folder + filename):
+              print 'NO '+working_path + exp_folder+ algo_folder + opt_folder + filename
+              missing_file = True
+          else:
+              ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
+              acc_tmp.append(ws['accu'])
+              ws.close()
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
+
+if missing_file:
+    sys.exit('missing file')
 
 # set font size
 font = {'family' : 'serif',
@@ -92,17 +104,18 @@ font = {'family' : 'serif',
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-aspectratio=4.5
+aspectratio=4
 idx = range(len(algo_list))
 
 plt.figure()
 error_config = {'ecolor': '0'}
 rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_config)
+rects[3].set_color('r')
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 #plt.xlabel('Alignment Methods')
-plt.xlim([-1,13])
-plt.ylim([0,1])
+plt.xlim([-1,7])
+plt.ylim([0,0.6])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 

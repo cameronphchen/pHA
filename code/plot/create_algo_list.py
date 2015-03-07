@@ -19,16 +19,6 @@ algo = {'name': 'HA',
 algo_list.append(algo)
 
 algo = {
-  'name': 'pHA I',
-  'align_algo': 'pha_em',
-  'nfeature': '1300',
-  'kernel': None,
-  'rand': False
-}
-algo_list.append(algo)
-
-
-algo = {
   'name': 'pHA 10',
   'align_algo': 'pha_em',
   'nfeature': '10',
@@ -72,53 +62,6 @@ algo = {
   'rand': True
 }
 algo_list.append(algo)
-
-
-algo = {
-  'name': 'pHAc 10',
-  'align_algo': 'ha_syn',
-  'nfeature': '10',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHAc 50',
-  'align_algo': 'ha_syn',
-  'nfeature': '50',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHAc 100',
-  'align_algo': 'ha_syn',
-  'nfeature': '100',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHAc 500',
-  'align_algo': 'ha_syn',
-  'nfeature': '500',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
-  'name': 'pHAc 1300',
-  'align_algo': 'ha_syn',
-  'nfeature': '1300',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
 
 # write python dict to a file
 output = open('algo_list.pkl', 'wb')

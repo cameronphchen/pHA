@@ -80,17 +80,23 @@ font = {'family' : 'serif',
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-aspectratio=4.5
-idx = range(len(algo_list))
+all_mean = np.insert(all_mean,1,0.632)
+all_se = np.insert(all_se,1,0.021)
+name.insert(1,'Within Subject')
+
+aspectratio=4
+idx = range(len(name))
 
 plt.figure()
 error_config = {'ecolor': '0'}
 rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_config)
+rects[1].set_color('c')
+rects[4].set_color('r')
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 #plt.xlabel('Alignment Methods')
-plt.xlim([-1,13])
-plt.ylim([0,1])
+plt.xlim([-1,8])
+plt.ylim([0,0.8])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 

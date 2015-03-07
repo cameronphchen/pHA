@@ -26,7 +26,7 @@ def transform(args, workspace_lh ,workspace_rh, align_data_lh, align_data_rh, ns
     transform_lh[:,:,loo] = U_lh.dot(V_lh)
     transform_rh[:,:,loo] = U_rh.dot(V_rh)
 
-  elif args.align_algo in ['pha_em','spha_vi']:
+  elif args.align_algo in ['pha_em','spha_vi', 'ppca_vert', 'pica_vert']:
     bW_lh = workspace_lh['bW']
     bW_rh = workspace_rh['bW']
     for m in range(nsubjs-1):

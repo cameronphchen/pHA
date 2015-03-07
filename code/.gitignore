@@ -4,12 +4,17 @@ __pycache__/
 
 # Rondo log
 *.o*
+/code/sh_script/imgpred/archive/
+/code/sh_script/imgpred_loo/archive/
+/code/sh_script/mysseg/archive/
+/code/sh_script/mysseg_loo/archive/
+
 
 # vim temp file
 *.swp
 
 # don't track data folder
 /data
-
+/data_old
 # mac system file
 *.DS_Store

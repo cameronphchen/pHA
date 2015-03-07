@@ -6,17 +6,8 @@
 #movie_data[:,:,m] is the data for subject m, which will be X_m^T in the standard 
 #mathematic notation
 
-# prior
-# bK_i  : TR x TR
+# do PCA on bX (nvoxel x nsubjs*nTR)
 
-# Variational Parameters:
-# mu_s  : nvoxel x TR
-# Sig_s : TR x TR x nvoxel
-
-# Hyperparameters:
-# W_m   : nvoxel x nfeature x nsubjs
-# rho2  : nsubjs 
-# mu    : nvoxel*nsubj 
 
 import numpy as np, scipy, random, sys, math, os
 from scipy import stats

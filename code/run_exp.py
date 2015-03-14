@@ -10,9 +10,14 @@
 # by Cameron Po-Hsuan Chen @ Princeton
  
 
-import numpy as np, scipy, random, sys, math, os
+import numpy as np
+import scipy
 import scipy.io
 from scipy import stats
+import random
+import sys
+import math
+import os
 import argparse
 from scikits.learn.svm import NuSVC
 import importlib
@@ -98,26 +103,30 @@ if args.strfresh:
     os.remove(options['working_path']+args.align_algo+'_lh_current.npz')
 
 # terminate the experiment early if the experiment is already done
-if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
-  sys.exit('experiment already finished, early termination')
+#if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
+#  sys.exit('experiment already finished, early termination')
 
 
 print 'start loading data'
 # load data for alignment and prediction
 # load movie data after voxel selection by matdata_preprocess.m 
 if args.exptype == 'imgpred':
-  mkdg_data_lh = scipy.io.loadmat(options['input_path']+'mkdg_data_lh.mat')
-  mkdg_data_rh = scipy.io.loadmat(options['input_path']+'mkdg_data_rh.mat')
-  pred_data_lh = mkdg_data_lh['mkdg_data_lh'] 
-  pred_data_rh = mkdg_data_rh['mkdg_data_rh']
+  image_data_lh = scipy.io.loadmat(options['input_path']+'image_data_lh.mat')
+  image_data_rh = scipy.io.loadmat(options['input_path']+'image_data_rh.mat')
+  pred_data_lh = image_data_lh['image_data_lh']
+  pred_data_rh = image_data_rh['image_data_rh']
 
   # load label for testing data
-  label = scipy.io.loadmat(options['input_path']+'subjall_picall_label.mat')
+  #label = scipy.io.loadmat(options['input_path']+'subjall_picall_label.mat')
+  label = scipy.io.loadmat(options['input_path']+'label.mat')
   label = label['label']
-  trn_label = label[0:504]
-  tst_label = label[504:560]
-  trn_label = np.squeeze(np.asarray(trn_label))
-  tst_label = np.squeeze(np.asarray(tst_label))
+  #trn_label = label[0:504]
+  #tst_label = label[504:560]
+  #trn_label = np.squeeze(np.asarray(trn_label))
+  #tst_label = np.squeeze(np.asarray(tst_label))
+  label = np.squeeze(label)
+  trn_label = np.hstack([label]*(pred_data_lh.shape[2]-1))
+  tst_label = label
   
   movie_data_lh = scipy.io.loadmat(options['input_path']+'movie_data_lh.mat')
   movie_data_rh = scipy.io.loadmat(options['input_path']+'movie_data_rh.mat')

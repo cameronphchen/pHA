@@ -52,6 +52,7 @@ onetwo = ['1st','2nd']
 
 working_path = '/fastscratch/pohsuan/pHA/data/working/'+data_folder
 output_path  = '/jukebox/ramadge/pohsuan/pHA/data/output/'
+missing_file = False
 
 for i in range(len(algo_list)):
   algo = algo_list[i]
@@ -64,9 +65,14 @@ for i in range(len(algo_list)):
     for order in range(2):
       exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
       opt_folder  = algo['nfeature']+'feat/identity/all/'
-      ws = np.load(working_path + exp_folder+ algo_folder + opt_folder + filename) 
-      acc_tmp.append(ws['accu'])
-      ws.close()
+      data_path = working_path + exp_folder+ algo_folder + opt_folder + filename
+      if not os.path.exists(data_path):
+          print 'NO '+data_path
+          missing_file = True
+      else:
+          ws = np.load(data_path)
+          acc_tmp.append(ws['accu'])
+          ws.close()
     acc_tmp = np.concatenate((acc_tmp[0], acc_tmp[1]))
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
@@ -76,15 +82,24 @@ for i in range(len(algo_list)):
       for rnd in range(args.nrand):
         exp_folder  = 'mysseg_'+onetwo[order]+'_winsize'+str(args.winsize)+'/'
         opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
-        ws = np.load(working_path + exp_folder + algo_folder + opt_folder + filename) 
-        acc_tmp.append(ws['accu'])
-        ws.close()
+        data_path = working_path + exp_folder+ algo_folder + opt_folder + filename
+        if not os.path.exists(data_path):
+            print 'NO '+data_path
+            missing_file = True
+        else:
+            ws = np.load(data_path)
+            acc_tmp.append(ws['accu'])
+            ws.close()
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 
+
+if missing_file:
+    sys.exit('missing file')
+
 # set font size
 font = {'family' : 'serif',
-        'size'   : 5}
+        'size'   : 10}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
@@ -106,7 +121,7 @@ def autolabel(rects):
     # attach some text labels
     for rect in rects:
         height = rect.get_height()
-        plt.axes().text(rect.get_x()+rect.get_width()/2., height+0.03, '%.3f'%float(height),
+        plt.axes().text(rect.get_x()+rect.get_width()/2., height+0.05, '%.3f'%float(height),
                 ha='center', va='bottom')
 
 autolabel(rects)

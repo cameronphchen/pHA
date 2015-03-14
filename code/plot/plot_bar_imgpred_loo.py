@@ -48,14 +48,13 @@ exp_folder  = 'imgpred/'
 working_path = '/fastscratch/pohsuan/pHA/data/working/'+data_folder+exp_folder
 output_path  = '/jukebox/ramadge/pohsuan/pHA/data/output/'
 
-for i in range(len(algo_list)):
-  algo = algo_list[i]
+for i, algo in enumerate(algo_list):
   algo_folder  = algo['align_algo'] + ("_"+algo['kernel'] if algo['kernel'] else "") +'/'
   filename    = algo['align_algo']+'_acc_'+args.niter +'.npz'
 
   if algo['rand'] == False:
     acc_tmp=[]
-    for loo in range(args.nsubjs):
+    for loo in xrange(args.nsubjs):
       opt_folder  = algo['nfeature']+'feat/identity/loo'+str(loo)+'/'
       ws = np.load(working_path + algo_folder + opt_folder + filename) 
       acc_tmp.append(ws['accu'])
@@ -64,8 +63,8 @@ for i in range(len(algo_list)):
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
   else:
     acc_tmp = []
-    for rnd in range(args.nrand):
-      for loo in range(args.nsubjs):
+    for rnd in xrange(args.nrand):
+      for loo in xrange(args.nsubjs):
         opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/loo'+str(loo)+'/'
         ws = np.load(working_path + algo_folder + opt_folder + filename) 
         acc_tmp.append(ws['accu'])
@@ -113,7 +112,3 @@ plt.title('Image Stimulus Prediction LOO {} {}vx {}TRs'.format(args.dataset.repl
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
                 'imgpred_loo_'+ args.niter+'thIter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
-
-#                args.exptype+('_winsize'+str(args.winsize) if args.winsize else ""),\
-
-

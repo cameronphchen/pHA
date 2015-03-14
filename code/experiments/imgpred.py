@@ -2,11 +2,13 @@
 
 import numpy as np, sys
 from scikits.learn.svm import NuSVC
+sys.path.append('/jukebox/ramadge/pohsuan/scikit-learn')
+from sklearn import svm
 
 def predict(transformed_data, args, trn_label ,tst_label):
   print 'imgpred',
   sys.stdout.flush()
-
+  
   (ndim, nsample , nsubjs) = transformed_data.shape
   accu = np.zeros(shape=nsubjs)
 
@@ -20,11 +22,13 @@ def predict(transformed_data, args, trn_label ,tst_label):
     trn_subj.remove(tst_subj)
 
     for m in range(nsubjs-1):
-      trn_data[:,m*56:(m+1)*56] = transformed_data[:,:,trn_subj[m]]
+      trn_data[:,m*nsample:(m+1)*nsample] = transformed_data[:,:,trn_subj[m]]
 
     # scikit-learn svm for classification
-    clf = NuSVC(nu=0.5, kernel = 'linear')
+    #clf = NuSVC(nu=0.5, kernel = 'linear')
+    clf = svm.NuSVC(nu=0.5, kernel = 'linear')
     clf.fit(trn_data.T, trn_label)
+
     pred_label = clf.predict(tst_data.T)
       
     accu[tst_subj] = sum(pred_label == tst_label)/float(len(pred_label))

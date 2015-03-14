@@ -59,16 +59,24 @@ def align(movie_data, options, args, lrh):
     sys.stdout.flush()
 
     G_tmp = G*nsubjs - movie_data_zscore[:,:,m].T.dot(R[:,:,m]) # G_tmp = G-XR
+    G_tmp = G_tmp/float(nsubjs-1)
 
     sys.stdout.flush()
     Am = movie_data_zscore[:,:,m].dot(G_tmp)
     pert = np.zeros((Am.shape))
     np.fill_diagonal(pert,1)
-    Um, sm, Vm = np.linalg.svd(Am+0.001*pert,full_matrices=0)
+    Um, sm, Vm = np.linalg.svd(Am+0.001*pert,full_matrices=False)
 
     R[:,:,m] = Um.dot(Vm) # R = UV^T
-    G = G_tmp + movie_data_zscore[:,:,m].T.dot(R[:,:,m]) #G = G_tmp + XR
+    G = G_tmp*(nsubjs-1) + movie_data_zscore[:,:,m].T.dot(R[:,:,m]) #G = G_tmp + XR
     G = G/float(nsubjs)
+
+  for m in range(nsubjs):
+    Am = movie_data_zscore[:,:,m].dot(G)
+    pert = np.zeros((Am.shape))
+    np.fill_diagonal(pert,1)  
+    Um, sm, Vm = np.linalg.svd(Am+0.001*pert, full_matrices=False) #USV = svd(X^TG)
+    R[:,:,m] = Um.dot(Vm) # R = UV^T
 
   new_niter = niter + 1
   np.savez_compressed(current_file, niter = new_niter)

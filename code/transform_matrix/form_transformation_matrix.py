@@ -2,11 +2,12 @@
 
 import numpy as np
 
-def transform(args, workspace_lh,workspace_rh, nsubjs):
+def transform(args, workspace_lh, workspace_rh, nsubjs):
+
   transform_lh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
   transform_rh = np.zeros((args.nvoxel,args.nfeature,nsubjs))
 
-  if args.align_algo in ['ha','ha_syn']:
+  if args.align_algo in ['ha','ha_syn','ha_syn_kernel']:
     transform_lh = workspace_lh['R']
     transform_rh = workspace_rh['R']
   elif args.align_algo in ['pha_em','spha_vi', 'ppca_vert',  'pica_vert']:

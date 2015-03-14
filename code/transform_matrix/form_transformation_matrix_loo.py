@@ -25,6 +25,18 @@ def transform(args, workspace_lh ,workspace_rh, align_data_lh, align_data_rh, ns
     U_rh, s_rh, V_rh = np.linalg.svd(align_data_rh_loo_zscore.dot(workspace_rh['G']), full_matrices=False)
     transform_lh[:,:,loo] = U_lh.dot(V_lh)
     transform_rh[:,:,loo] = U_rh.dot(V_rh)
+    
+  elif args.align_algo in ['ha_sm_retraction','ha_sm_newton']:
+    bW_lh = workspace_lh['W']
+    bW_rh = workspace_rh['W']
+    for m in range(nsubjs-1):
+      transform_lh[:,:,loo_idx[m]] = bW_lh[:,:,m]
+      transform_rh[:,:,loo_idx[m]] = bW_rh[:,:,m]
+    # find transform_lh[:,:,loo], transform_rh[:,:,loo]
+    U_lh, s_lh, V_lh = np.linalg.svd(align_data_lh_loo_zscore.dot(workspace_lh['G']), full_matrices=False)
+    U_rh, s_rh, V_rh = np.linalg.svd(align_data_rh_loo_zscore.dot(workspace_rh['G']), full_matrices=False)
+    transform_lh[:,:,loo] = U_lh.dot(V_lh)
+    transform_rh[:,:,loo] = U_rh.dot(V_rh)
 
   elif args.align_algo in ['pha_em','spha_vi', 'ppca_vert', 'pica_vert']:
     bW_lh = workspace_lh['bW']

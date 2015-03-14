@@ -75,8 +75,6 @@ def align(movie_data, options, args, lrh):
 
   # remove mean
   bX = bX - bX.mean(axis=1)[:,np.newaxis]
-  #print 'bX'
-  #print bX
 
   print str(niter+1)+'th',
  

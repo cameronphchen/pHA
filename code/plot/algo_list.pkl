@@ -2,7 +2,7 @@
 (dp1
 S'align_algo'
 p2
-S'noalign'
+S'ha'
 p3
 sS'rand'
 p4
@@ -13,79 +13,68 @@ S'1300'
 p6
 sS'name'
 p7
-g3
-sS'kernel'
+S'HA (1300vx)'
 p8
-Nsa(dp9
+sS'kernel'
+p9
+Nsa(dp10
 g2
-S'ha'
-p10
-sg4
-I00
-sg5
-g6
-sg7
-S'HA'
+S'ha_syn'
 p11
-sg8
-Nsa(dp12
-g2
-S'pha_em'
-p13
 sg4
 I01
 sg5
 S'10'
-p14
+p12
 sg7
-S'pHA 10'
-p15
-sg8
-Nsa(dp16
+S'pHAc 10'
+p13
+sg9
+Nsa(dp14
 g2
-g13
+g11
 sg4
 I01
 sg5
 S'50'
-p17
+p15
 sg7
-S'pHA 50'
-p18
-sg8
-Nsa(dp19
+S'pHAc 50'
+p16
+sg9
+Nsa(dp17
 g2
-g13
+g11
 sg4
 I01
 sg5
 S'100'
-p20
+p18
 sg7
-S'pHA 100'
-p21
-sg8
-Nsa(dp22
+S'pHAc 100'
+p19
+sg9
+Nsa(dp20
 g2
-g13
+g11
 sg4
 I01
 sg5
 S'500'
-p23
+p21
 sg7
-S'pHA 500'
-p24
-sg8
-Nsa(dp25
+S'pHAc 500'
+p22
+sg9
+Nsa(dp23
 g2
-g13
+g11
 sg4
 I01
 sg5
 g6
 sg7
-S'pHA 1300'
-p26
-sg8
+S'pHAc 1300'
+p24
+sg9
 Nsa.

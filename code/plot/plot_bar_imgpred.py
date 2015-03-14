@@ -8,6 +8,7 @@ from scipy import stats
 import math
 import pickle
 import os
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("dataset",    help="name of the dataset")
@@ -49,30 +50,44 @@ exp_folder  = 'imgpred/'
 working_path = '/fastscratch/pohsuan/pHA/data/working/'+data_folder+exp_folder
 output_path  = '/jukebox/ramadge/pohsuan/pHA/data/output/'
 
-for i in range(len(algo_list)):
-  algo = algo_list[i]
+missing_file = False
+
+for i, algo in enumerate(algo_list):
   algo_folder  = algo['align_algo'] + ("_"+algo['kernel'] if algo['kernel'] else "") +'/'
   filename    = algo['align_algo']+'_acc_'+args.niter +'.npz'
 
   if algo['rand'] == False:
-    opt_folder  = algo['nfeature']+'feat/identity/all/'
-    ws = np.load(working_path + algo_folder + opt_folder + filename) 
-    all_mean[i] = np.mean(ws['accu'])
-    all_se  [i] = np.std(ws['accu'])/math.sqrt(args.nsubjs) 
-    ws.close()
+      opt_folder  = algo['nfeature']+'feat/identity/all/'
+      data_path = working_path + algo_folder + opt_folder + filename
+      if not os.path.exists(data_path):
+          print 'NO '+data_path
+          missing_file = True
+      else:
+          ws = np.load(data_path)
+          all_mean[i] = np.mean(ws['accu'])
+          all_se  [i] = np.std(ws['accu'])/math.sqrt(args.nsubjs)
+          ws.close()
   else:
-    acc_tmp = []
-    for rnd in range(args.nrand):
-      opt_folder  = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
-      ws = np.load(working_path + algo_folder + opt_folder + filename) 
-      acc_tmp.append(ws['accu'])
-      ws.close()
-    all_mean[i] = np.mean(acc_tmp)
-    all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
+      acc_tmp = []
+      for rnd in range(args.nrand):
+          opt_folder = algo['nfeature']+'feat/'+'rand'+str(rnd)+'/all/'
+          data_path = working_path + algo_folder + opt_folder + filename
+          if not os.path.exists(data_path):
+              print 'NO '+data_path
+              missing_file = True
+          else:
+              ws = np.load(data_path)
+              acc_tmp.append(ws['accu'])
+              ws.close()
+      all_mean[i] = np.mean(acc_tmp)
+      all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
+
+if missing_file:
+    sys.exit('missing file')
 
 # set font size
 font = {'family' : 'serif',
-        'size'   : 5}
+        'size'   : 10}
 
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
@@ -94,7 +109,7 @@ def autolabel(rects):
     # attach some text labels
     for rect in rects:
         height = rect.get_height()
-        plt.axes().text(rect.get_x()+rect.get_width()/2., height+0.03, '%.3f'%float(height),
+        plt.axes().text(rect.get_x()+rect.get_width()/2., height+0.1, '%.3f'%float(height),
                 ha='center', va='bottom')
 
 autolabel(rects)

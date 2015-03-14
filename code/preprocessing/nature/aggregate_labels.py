@@ -7,6 +7,7 @@ import sys
 sys.path.insert(0,'/jukebox/ramadge/pohsuan/PyMVPA-hyper')
 import mvpa2
 from mvpa2.base.hdf5 import h5load
+import pickle
 
 roi = 'vt'
 template_path   = '/jukebox/ramadge/RAW_DATA/nature_movie_animal_action/'
@@ -50,36 +51,26 @@ animal_list = ['bird','bug','primate','ungulate','reptile']
 action_list = ['eating','fighting','running','swimming']
 task_list   = ['action','animal']
 
-condition_label = []
-animal_label    = []
-action_label    = []
-task_label      = []
+condition_label = np.zeros(200)
+animal_label = np.zeros(200)
+action_label = np.zeros(200) 
+task_label = np.zeros(200)
 
-for l in ds_image[0].sa['conditions'].value:
-    condition_label.append(condition_list.index(l))
+for i, (co, an, ac, ta) in enumerate(zip(ds_image[0].sa['conditions'].value,
+                                         ds_image[0].sa['animals'].value,
+                                         ds_image[0].sa['actions'].value,
+                                         ds_image[0].sa['task'].value)):
+    condition_label[i] =condition_list.index(co)
+    animal_label[i]    =animal_list.index(an)
+    action_label[i]    =action_list.index(ac)
+    task_label[i]      =task_list.index(ta)
 
-for l in ds_image[0].sa['animals'].value:
-    animal_label.append(animal_list.index(l))
-
-for l in ds_image[0].sa['actions'].value:
-    action_label.append(action_list.index(l))
-
-for l in ds_image[0].sa['task'].value:
-    task_label.append(task_list.index(l))
-
-f = open('/jukebox/ramadge/pohsuan/pHA/data/raw/nature_'+roi+'/condition_label.txt', 'w')
-for l in condition_label:
-    f.write('{}'.format(l))
-
-f = open('/jukebox/ramadge/pohsuan/pHA/data/raw/nature_'+roi+'/animal_label.txt', 'w')
-for l in animal_label:
-    f.write('{}'.format(l))
-
-f = open('/jukebox/ramadge/pohsuan/pHA/data/raw/nature_'+roi+'/action_label.txt', 'w')
-for l in action_label:
-    f.write('{}'.format(l))
-
-f = open('/jukebox/ramadge/pohsuan/pHA/data/raw/nature_'+roi+'/task_label.txt', 'w')
-for l in task_label:
-    f.write('{}'.format(l))
+all_labels = [ condition_label ,  animal_label , action_label, task_label]
+all_name   = ['condition_label', 'animal_label','action_label','task_label']
+output_path = '/jukebox/ramadge/pohsuan/pHA/data/raw/nature_vt_noLR/'
+for name, label in zip(all_name, all_labels):
+    output = open(output_path+name+'.pkl', 'wb')
+    pickle.dump(label, output)
+    output.close()
+    scipy.io.savemat(output_path+name+'.mat', {'label': label})
 

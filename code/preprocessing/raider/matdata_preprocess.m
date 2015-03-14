@@ -2,7 +2,7 @@
 
 % please put compute_voxel_ranks.m under the same directory
 nTR_str = '2203'
-nvoxel_str = '500'
+nvoxel_str = '1300'
 dataset = 'raider'
 
 nTR = str2num(nTR_str)
@@ -52,7 +52,7 @@ end
 assert(sum(sum(sum(isnan(movie_data_rh)))) == 0)
 assert(sum(sum(sum(isnan(movie_data_lh)))) == 0)
 
-output_path = ['/jukebox/ramadge/pohsuan/pHA/data_v2/input/' dataset '/' nvoxel_str 'vx/' nTR_str 'TR/']
+output_path = ['/jukebox/ramadge/pohsuan/pHA/data/input/' dataset '/' nvoxel_str 'vx/' nTR_str 'TR/']
 
 mkdir(output_path)
 save([output_path 'movie_data_lh.mat'],'movie_data_lh');
@@ -60,32 +60,32 @@ save([output_path 'movie_data_rh.mat'],'movie_data_rh');
 
 
 % apply voxel selection on image watching data
-mkdg_data_lh = nan(nvoxel, 56, nsubjs);
-mkdg_data_rh = nan(nvoxel, 56, nsubjs);
+image_data_lh = nan(nvoxel, 56, nsubjs);
+image_data_rh = nan(nvoxel, 56, nsubjs);
 for i = 1:nsubjs
     data_tmp = mkdg_timeaveraged_data{i,1};
 
-    mkdg_data_lh_tmp = data_tmp(vt_mask{i,1}==1,:);
-    mkdg_data_rh_tmp = data_tmp(vt_mask{i,1}==2,:);
+    image_data_lh_tmp = data_tmp(vt_mask{i,1}==1,:);
+    image_data_rh_tmp = data_tmp(vt_mask{i,1}==2,:);
 
-    mkdg_data_lh_tmp = mkdg_data_lh_tmp(vox_ranks{1,1}{i,1}(1:nvoxel),:);
-    mkdg_data_rh_tmp = mkdg_data_rh_tmp(vox_ranks{2,1}{i,1}(1:nvoxel),:);
+    image_data_lh_tmp = image_data_lh_tmp(vox_ranks{1,1}{i,1}(1:nvoxel),:);
+    image_data_rh_tmp = image_data_rh_tmp(vox_ranks{2,1}{i,1}(1:nvoxel),:);
 
-%    mkdg_data_lh_tmp = mkdg_data_lh_tmp(1:nvoxel,:);
-%    mkdg_data_rh_tmp = mkdg_data_rh_tmp(1:nvoxel,:);
+%    image_data_lh_tmp = image_data_lh_tmp(1:nvoxel,:);
+%    image_data_rh_tmp = image_data_rh_tmp(1:nvoxel,:);
 
-    mkdg_data_lh_tmp = zscore(mkdg_data_lh_tmp')';
-    mkdg_data_rh_tmp = zscore(mkdg_data_rh_tmp')';    
+    image_data_lh_tmp = zscore(image_data_lh_tmp')';
+    image_data_rh_tmp = zscore(image_data_rh_tmp')';    
 
-    mkdg_data_lh(:,:,i) = mkdg_data_lh_tmp(:,block_labels>0); 
-    mkdg_data_rh(:,:,i) = mkdg_data_rh_tmp(:,block_labels>0);
+    image_data_lh(:,:,i) = image_data_lh_tmp(:,block_labels>0); 
+    image_data_rh(:,:,i) = image_data_rh_tmp(:,block_labels>0);
 end
 
-assert(sum(sum(sum(isnan(mkdg_data_lh)))) == 0)
-assert(sum(sum(sum(isnan(mkdg_data_rh)))) == 0)
+assert(sum(sum(sum(isnan(image_data_lh)))) == 0)
+assert(sum(sum(sum(isnan(image_data_rh)))) == 0)
 
-save([output_path 'mkdg_data_lh.mat'],'mkdg_data_lh');
-save([output_path 'mkdg_data_rh.mat'],'mkdg_data_rh');
+save([output_path 'image_data_lh.mat'],'image_data_lh');
+save([output_path 'image_data_rh.mat'],'image_data_rh');
 
 
 

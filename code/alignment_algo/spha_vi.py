@@ -23,8 +23,10 @@ from scipy import stats
 import sys
 sys.path.append('/jukebox/ramadge/pohsuan/pyGPs')
 import pyGPs
+import copy
 
-def spHA_VI(movie_data, options, args, lrh):
+
+def align(movie_data, options, args, lrh):
     print 'spHA_VI'
     nvoxel = movie_data.shape[0]
     nTR    = movie_data.shape[1]
@@ -32,6 +34,7 @@ def spHA_VI(movie_data, options, args, lrh):
 
     align_algo = args.align_algo
     nfeature   = args.nfeature
+    use_temporal_prior = False
 
     current_file = options['working_path']+align_algo+'_'+lrh+'_current.npz'
     # zscore the data
@@ -47,12 +50,20 @@ def spHA_VI(movie_data, options, args, lrh):
     kernel = pyGPs.cov.RBFard(1) ## remember to modify the kernel in optimization objective function
     #kernel = pyGPs.cov.SM(Q=50,D=1) ## remember to modify the kernel in optimization objective function
     #kernel = pyGPs.cov.RQ() ## remember to modify the kernel in optimization objective function
-    T_idx  = np.arange(nTR)
-    T_idx  = T_idx[:,None]
+
+    T_idx = np.arange(nTR)
+    T_idx = T_idx[:, None]
+    if use_temporal_prior:
+        time_label_ws = scipy.io.loadmat(options['input_path']+'face_label.mat')
+        tmp = time_label_ws['regressor_vector']
+        face_label = np.hstack([np.squeeze(tmp[4:1101]), np.squeeze(tmp[1106:2212])] )
+        for t in np.where(face_label == 1):
+            T_idx[t] = 1
+
     np.random.seed(args.randseed)
     kernel.hyp = [np.random.random() for rr in range(len(kernel.hyp))]
     btheta = kernel.hyp
-    bK_i   = kernel.getCovMatrix(T_idx,T_idx,'train')
+    bK_i = kernel.getCovMatrix(T_idx, T_idx, 'train')
 
     # initialization when first time run the algorithm
     if not os.path.exists(current_file):
@@ -83,7 +94,6 @@ def spHA_VI(movie_data, options, args, lrh):
             sigma2[m] = 1
 
         niter = 0
-        print options['working_path']
         np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(niter)+'.npz',\
                                     bW = bW, bmu=bmu, sigma2=sigma2, ES=ES, btheta = btheta , niter=niter)
 
@@ -101,6 +111,8 @@ def spHA_VI(movie_data, options, args, lrh):
     # remove mean
     bX = bX - bX.mean(axis=1)[:,np.newaxis]
 
+    pert = np.zeros((bK_i.shape))
+    np.fill_diagonal(pert,1)
 
     print str(niter+1)+'th',
     tmp_sum_tr_Sig_si = 0
@@ -108,14 +120,15 @@ def spHA_VI(movie_data, options, args, lrh):
     mumuT_sum  = np.zeros((nTR,nTR))
     tmp_log_det_Sigsi = 0
     for i in range(nfeature):
-        print i,
+        print '.',
         sys.stdout.flush()
 
         tmp_sig_si = 0
         # calculate \bSig_{\bs_i}
         for m in range(nsubjs):
-          tmp_sig_si += ( np.linalg.norm(bW[m*nvoxel:(m+1)*nvoxel,i])**2 )/sigma2[m]
-        Sig_si =  scipy.linalg.inv( scipy.linalg.inv(bK_i) + tmp_sig_si*np.identity(nTR) )
+            tmp_sig_si += ( np.linalg.norm(bW[m*nvoxel:(m+1)*nvoxel,i])**2 )/sigma2[m]
+
+        Sig_si =  scipy.linalg.inv( scipy.linalg.inv(bK_i+  0.001*pert) + tmp_sig_si*np.identity(nTR) )
         #tmp_log_det_Sigsi += math.log(np.linalg.det(Sig_si))
         sign , tmp_log_det_Sigsi = np.linalg.slogdet(Sig_si)
         if sign == -1:
@@ -125,8 +138,6 @@ def spHA_VI(movie_data, options, args, lrh):
         # calculate \bmu_{\bs_i}
         tmp_sigma2WxWE = np.zeros((nTR,1))
         for m in xrange(nsubjs):
-            print('.'),
-            sys.stdout.flush()
             tmp_WxWE = np.zeros((nTR,1))
             for k in xrange(nvoxel):
                 tmp_WmkjEsj = np.zeros((nTR,1))
@@ -143,8 +154,6 @@ def spHA_VI(movie_data, options, args, lrh):
         mumuT_sum += np.outer(ES[i,:],ES[i,:])
 
     for m in range(nsubjs):
-        print('.'),
-        sys.stdout.flush()
         Am = bX[m*nvoxel:(m+1)*nvoxel,:].dot(ES.T)
         Um, sm, Vm = np.linalg.svd(Am, full_matrices=False)
 
@@ -156,11 +165,11 @@ def spHA_VI(movie_data, options, args, lrh):
 
     # hyperparameter optimization TODO whether there's any bug
 
-    def obj_func(kernel_opt, btheta_opt):
-        # kernel_opt = pyGPs.cov.RBFard(1)
-        # kernel_opt.hyp = btheta_opt
+    def obj_func(btheta_opt): # ", kernel_opt):
+        kernel_opt = pyGPs.cov.RBFard(1)
+        kernel_opt.hyp = btheta_opt
         bK_i_opt = kernel_opt.getCovMatrix(T_idx, T_idx, 'train')
-        bK_i_opt_inv = scipy.linalg.inv(bK_i_opt)
+        bK_i_opt_inv = scipy.linalg.inv(bK_i_opt+0.001*pert)
         sign_opt , logdet_opt = np.linalg.slogdet(bK_i_opt)
         return 0.5*nfeature*sign_opt*logdet_opt + 0.5*np.trace(bK_i_opt_inv.dot(mumuT_sum+Sig_si_sum))
 
@@ -175,8 +184,9 @@ def spHA_VI(movie_data, options, args, lrh):
 
     # btheta = scipy.optimize.minimize(obj_func, btheta)
     # maximize elbo == minimize -elbo
-    btheta = scipy.optimize.fmin(obj_func, args=(copy.deepcopy(kernel),btheta), maxiter=10)
-    print btheta
+    # btheta = scipy.optimize.fmin(obj_func,btheta , (copy.deepcopy(kernel),), maxiter=10)
+    btheta = scipy.optimize.fmin(obj_func, btheta, maxiter=10)
+    print btheta,
 
     #### original error code
     #for l in range(len(btheta)):
@@ -186,7 +196,7 @@ def spHA_VI(movie_data, options, args, lrh):
     ##### ADDED LINE TO MODIFY KERNEL HYPERPARAMETER
     kernel.hyp = btheta;
     bK_i   = kernel.getCovMatrix(T_idx,T_idx,'train')
-    bK_i_inv = scipy.linalg.inv(bK_i)
+    bK_i_inv = scipy.linalg.inv(bK_i+0.001*pert)
 
     new_niter = niter + 1
     np.savez_compressed(current_file, niter = new_niter)
@@ -213,7 +223,7 @@ def spHA_VI(movie_data, options, args, lrh):
 
     print 'ELBO'+str(ELBO)
 
-    np.savez_compressed(options['output_path']+align_algo+'_'+'elbo_'+lrh+'_'+str(new_niter)+'.npz',\
+    np.savez_compressed(options['working_path']+align_algo+'_'+'elbo_'+lrh+'_'+str(new_niter)+'.npz',\
                    ELBO=ELBO)
 
     return new_niter

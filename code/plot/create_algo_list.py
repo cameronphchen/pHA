@@ -2,14 +2,13 @@ import pickle
 
 algo_list = []
 
-algo = {'name': 'HA (1300vx)',
+algo = {'name': 'HA (850)',
   'align_algo': 'ha',
-  'nfeature': '1300',
+  'nfeature': '850',
   'kernel': None,
   'rand': False
 }
 algo_list.append(algo)
-
 
 algo = {
   'name': 'pHAc 10',
@@ -39,6 +38,15 @@ algo = {
 algo_list.append(algo)
 
 algo = {
+  'name': 'pHAc 400',
+  'align_algo': 'ha_syn',
+  'nfeature': '400',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
   'name': 'pHAc 500',
   'align_algo': 'ha_syn',
   'nfeature': '500',
@@ -48,13 +56,33 @@ algo = {
 algo_list.append(algo)
 
 algo = {
-  'name': 'pHAc 1300',
+  'name': 'pHAc 600',
   'align_algo': 'ha_syn',
-  'nfeature': '1300',
+  'nfeature': '600',
   'kernel': None,
   'rand': True
 }
 algo_list.append(algo)
+
+algo = {
+  'name': 'pHAc 700',
+  'align_algo': 'ha_syn',
+  'nfeature': '700',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+
+algo = {
+  'name': 'pHAc 850',
+  'align_algo': 'ha_syn',
+  'nfeature': '850',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
 
 # write python dict to a file
 output = open('algo_list.pkl', 'wb')

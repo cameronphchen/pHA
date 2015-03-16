@@ -96,13 +96,7 @@ def align(movie_data, options, args, lrh):
     Am = bX[m*nvoxel:(m+1)*nvoxel,:].dot(ES.T)
     pert = np.zeros((Am.shape))
     np.fill_diagonal(pert,1)
-    #print 'Am'
-    #print Am+0.001*pert
     Um, sm, Vm = np.linalg.svd(Am+0.001*pert,full_matrices=0)
-    #print 'Um'
-    #print Um
-    #print 'Vm'
-    #print Vm
     bW[m*nvoxel:(m+1)*nvoxel,:] = Um.dot(Vm)
     sigma2[m] =    np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bX[m*nvoxel:(m+1)*nvoxel,:]))\
                   -2*np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bW[m*nvoxel:(m+1)*nvoxel,:]).dot(ES))\

@@ -24,31 +24,30 @@ import sys
 sys.path.append('/jukebox/ramadge/pohsuan/scikit-learn/sklearn')
 from sklearn.decomposition import PCA
 
-def pPCA(movie_data, options, para, lrh):
-  print 'pPCA(scikit-learn)'
-  nvoxel = movie_data.shape[0]
-  nTR    = movie_data.shape[1]
-  nsubjs = movie_data.shape[2]
+def align(movie_data, options, args, lrh):
+    print 'pPCA(scikit-learn)'
+    nvoxel = movie_data.shape[0]
+    nTR    = movie_data.shape[1]
+    nsubjs = movie_data.shape[2]
 
-  align_algo = para['align_algo']
-  nfeature   = para['nfeature']
-  
-  if not os.path.exists(options['working_path']):
-    os.makedirs(options['working_path'])
+    align_algo = args.align_algo
+    nfeature   = args.nfeature
 
-  # zscore the data
-  bX = np.zeros((nsubjs*nTR,nvoxel))
-  for m in range(nsubjs):
-    for t in range(nTR):
-      bX[nTR*m+t,:] = stats.zscore(movie_data[:,t,m].T ,axis=0, ddof=1)
-  del movie_data
+    # zscore the data
+    bX = np.nan((nsubjs*nvoxel,nTR))
 
-  U, s, VT = np.linalg.svd(bX, full_matrices=False)
-  V = VT.T
+    for m in xrange(nsubjs):
+        bX[m*nvoxel:(m+1)*nvoxel,:] = stats.zscore(movie_data[:, :, m].T, axis=0, ddof=1).T
+    del movie_data
 
-  R = V[:,range(nfeature)]
-  niter = 1  
-  # initialization when first time run the algorithm
-  np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(para['nvoxel'])+'vx_'+str(niter)+'.npz',\
-                                R = R,  niter=niter)
-  return niter
+    U, s, VT = np.linalg.svd(bX, full_matrices=False)
+
+    bW = np.zeros((nsubjs*nvoxel,nfeature))
+    for m in xrange(nsubjs):
+        bW[m*nvoxel:(m+1)*nvoxel,:] = U[m*nvoxel:(m+1)*nvoxel,:nfeature]
+
+    niter = 10
+    # initialization when first time run the algorithm
+    np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(niter)+'.npz',\
+                                  bW = bW,  niter=niter)
+    return niter

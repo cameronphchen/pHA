@@ -3,21 +3,40 @@
 #usage: run_exp.py dataset nvoxel nTR  exptype [--loo] [--expopt] [--winsize] 
 #             align_algo [-k kernel] niter nfeature [-r RANDSEED] [--strfresh]
 
+#raider, forrest_pt, nature_vt
+#1300  , 1300      , 850
+#2203  , 3535      , 1509
+
+#dataset='raider'
+#nvoxel=1300
+#nTR=2203
+#niter=10
+
+submittype='submit'
+dataset='raider'
+nvoxel=1300
+nTR=2203
+niter=1
+nsubj=9
+
 ln -s /jukebox/ramadge/pohsuan/pHA/code/run_exp.py run_exp.py
 chmod +x run_exp.py
-for loo in $(seq 0 9)
+for loo in $(seq 0 $nsubj)
 do
-#  submit_long run_exp.py raider 1300 2203 imgpred --loo $loo noalign 10 1300 --strfresh
-#  submit_long run_exp.py raider 1300 2203 imgpred --loo $loo ha 10 1300 --strfresh
-#  submit_long run_exp.py raider 1300 2203 imgpred --loo $loo pha_em 10 1300 --strfresh
-#done
-  for nfeat in 10 50 100 500 1300
-  do
-    #submit_long run_exp.py raider 1300 2203 imgpred --loo $loo ppca 10 $nfeat --strfresh
-    for rand in $(seq 0 4)
+    #$submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo ha      $niter $nvoxel --strfresh
+    #$submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo ha_syn  $niter $nvoxel --strfresh
+    #$submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo noalign $niter $nvoxel --strfresh
+    #$submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo pha_em  $niter $nvoxel --strfresh
+    for nfeat in 10 50 100 500 1300
     do
-      #submit run_exp.py raider 1300 2203 imgpred --loo $loo pica 10 $nfeat -r $rand --strfresh
-      submit_long run_exp.py raider 1300 2203 imgpred --loo $loo ha_sm_retraction 10 $nfeat -r $rand --strfresh
+        $submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo ppca $niter $nfeat --strfresh
+        for rand in $(seq 0 4)
+        do
+            #$submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo ha_sm_retraction $niter $nfeat -r $rand --strfresh
+            #$submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo ha_syn $niter $nfeat -r $rand --strfresh
+            #$submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo pha_em $niter $nfeat -r $rand --strfresh
+            $submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo pica $niter $nfeat -r $rand --strfresh
+            #$submittype run_exp.py $dataset $nvoxel $nTR imgpred --loo $loo spha_vi $niter $nfeat -r $rand --strfresh
+        done
     done
-  done
 done

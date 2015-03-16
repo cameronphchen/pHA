@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # by Cameron Po-Hsuan Chen @ Princeton
- 
+#####THIS CODE IS NOT WORKING YET!!
 
 import numpy as np, scipy, random, sys, math, os
 import scipy.io
@@ -28,13 +28,15 @@ parser.add_argument("nsubjs", type = int,
 parser.add_argument("exptype",    help="name of the experiment type")
 parser.add_argument("-w", "--winsize", type = int,
                     help="mysseg winsize")
+parser.add_argument("-l", "--loo",
+                    help="check loo")
 
 args = parser.parse_args()
 
-align_algo_list=['noalign', 'ha', 'pha_em', 'ha_syn']
+align_algo_list=['noalign', 'ha', 'pha_em', 'ha_syn', 'ha_sm_retraction']
 nfeature_list  = [10,50,100,500,1300]
 rand_list      = range(5)
-if args.loo is not None
+if args.loo is not None:
     loo_list       = range(args.nsubjs)
 
 

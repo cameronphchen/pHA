@@ -9,11 +9,11 @@ p4
 I00
 sS'nfeature'
 p5
-S'1300'
+S'850'
 p6
 sS'name'
 p7
-S'HA (1300vx)'
+S'HA (850)'
 p8
 sS'kernel'
 p9
@@ -60,10 +60,10 @@ g11
 sg4
 I01
 sg5
-S'500'
+S'400'
 p21
 sg7
-S'pHAc 500'
+S'pHAc 400'
 p22
 sg9
 Nsa(dp23
@@ -72,9 +72,45 @@ g11
 sg4
 I01
 sg5
+S'500'
+p24
+sg7
+S'pHAc 500'
+p25
+sg9
+Nsa(dp26
+g2
+g11
+sg4
+I01
+sg5
+S'600'
+p27
+sg7
+S'pHAc 600'
+p28
+sg9
+Nsa(dp29
+g2
+g11
+sg4
+I01
+sg5
+S'700'
+p30
+sg7
+S'pHAc 700'
+p31
+sg9
+Nsa(dp32
+g2
+g11
+sg4
+I01
+sg5
 g6
 sg7
-S'pHAc 1300'
-p24
+S'pHAc 850'
+p33
 sg9
 Nsa.

@@ -38,7 +38,7 @@ def transform(args, workspace_lh ,workspace_rh, align_data_lh, align_data_rh, ns
     transform_lh[:,:,loo] = U_lh.dot(V_lh)
     transform_rh[:,:,loo] = U_rh.dot(V_rh)
 
-  elif args.align_algo in ['pha_em','spha_vi', 'ppca_vert', 'pica_vert']:
+  elif args.align_algo in ['pha_em','spha_vi', 'ppca', 'pica']:
     bW_lh = workspace_lh['bW']
     bW_rh = workspace_rh['bW']
     for m in range(nsubjs-1):
@@ -50,7 +50,7 @@ def transform(args, workspace_lh ,workspace_rh, align_data_lh, align_data_rh, ns
     transform_lh[:,:,loo] = U_lh.dot(V_lh)
     transform_rh[:,:,loo] = U_rh.dot(V_rh)
 
-  elif args.align_algo in ['ppca','pica']:
+  elif args.align_algo in ['ppca_hor','pica_hor']:
     bW_lh = workspace_lh['R']
     bW_rh = workspace_rh['R']
     for m in range(nsubjs):

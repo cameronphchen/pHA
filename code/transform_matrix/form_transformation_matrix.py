@@ -10,13 +10,13 @@ def transform(args, workspace_lh, workspace_rh, nsubjs):
   if args.align_algo in ['ha','ha_syn','ha_syn_kernel']:
     transform_lh = workspace_lh['R']
     transform_rh = workspace_rh['R']
-  elif args.align_algo in ['pha_em','spha_vi', 'spha_vi_tm', 'ppca_vert',  'pica_vert']:
+  elif args.align_algo in ['pha_em','spha_vi', 'spha_vi_tm', 'ppca',  'pica']:
     bW_lh = workspace_lh['bW']
     bW_rh = workspace_rh['bW']
     for m in range(nsubjs):
       transform_lh[:,:,m] = bW_lh[m*args.nvoxel:(m+1)*args.nvoxel,:]
       transform_rh[:,:,m] = bW_rh[m*args.nvoxel:(m+1)*args.nvoxel,:]
-  elif args.align_algo in ['ppca','pica']:
+  elif args.align_algo in ['ppca_hor','pica_hor']:
     bW_lh = workspace_lh['R']
     bW_rh = workspace_rh['R']
     for m in range(nsubjs):

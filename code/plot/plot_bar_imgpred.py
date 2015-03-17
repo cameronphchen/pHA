@@ -38,7 +38,7 @@ pkl_file.close()
 
 name = []
 for algo in algo_list:
-  name.append(algo['name'])
+  name.append(algo['name'].replace('_','-'))
 
 
 all_mean = np.zeros((len(name)))

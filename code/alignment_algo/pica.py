@@ -30,7 +30,7 @@ def align(movie_data, options, args, lrh):
     # zscore the data
     bX = np.zeros((nsubjs*nvoxel,nTR))
     for m in range(nsubjs):
-        bX[m*nvoxel:(m+1)*nvoxel,:] = stats.zscore(movie_data[:,:,m].T ,axis=0, ddof=1).T
+        bX[m*nvoxel:(m+1)*nvoxel,:] = stats.zscore(movie_data[:, :, m].T ,axis=0, ddof=1).T
     del movie_data
  
     np.random.seed(randseed)

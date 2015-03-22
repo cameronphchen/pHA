@@ -40,7 +40,7 @@ pkl_file.close()
 
 name = []
 for algo in algo_list:
-  name.append(algo['name'])
+  name.append(algo['name'].replace('_','-'))
 
 
 all_mean = np.zeros((len(name)))
@@ -73,7 +73,7 @@ for i in range(len(algo_list)):
           ws = np.load(data_path)
           acc_tmp.append(ws['accu'])
           ws.close()
-    acc_tmp = np.concatenate((acc_tmp[0], acc_tmp[1]))
+    #acc_tmp = np.concatenate((acc_tmp[0], acc_tmp[1]))
     all_mean[i] = np.mean(acc_tmp)
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs) 
   else:

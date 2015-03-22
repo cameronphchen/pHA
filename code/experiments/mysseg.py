@@ -2,7 +2,9 @@
 
 import numpy as np, sys
 from scipy import stats
-from scikits.learn.svm import NuSVC
+sys.path.append('/jukebox/ramadge/pohsuan/scikit-learn/sklearn')
+from sklearn.svm import NuSVC
+#from scikits.learn.svm import NuSVC
 
 def predict(transformed_data, args):
   print 'mysseg',

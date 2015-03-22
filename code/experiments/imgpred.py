@@ -1,9 +1,9 @@
 # image prediction experiment code
 
 import numpy as np, sys
-from scikits.learn.svm import NuSVC
-sys.path.append('/jukebox/ramadge/pohsuan/scikit-learn')
-from sklearn import svm
+#from scikits.learn.svm import NuSVC
+sys.path.append('/jukebox/ramadge/pohsuan/scikit-learn/sklearn')
+from sklearn.svm import NuSVC
 
 def predict(transformed_data, args, trn_label ,tst_label):
   print 'imgpred',
@@ -26,7 +26,7 @@ def predict(transformed_data, args, trn_label ,tst_label):
 
     # scikit-learn svm for classification
     #clf = NuSVC(nu=0.5, kernel = 'linear')
-    clf = svm.NuSVC(nu=0.5, kernel = 'linear')
+    clf = NuSVC(nu=0.5, kernel = 'linear')
     clf.fit(trn_data.T, trn_label)
 
     pred_label = clf.predict(tst_data.T)

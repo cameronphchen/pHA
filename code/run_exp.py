@@ -19,7 +19,9 @@ import sys
 import math
 import os
 import argparse
-from scikits.learn.svm import NuSVC
+#from scikits.learn.svm import NuSVC
+sys.path.append('/jukebox/ramadge/pohsuan/scikit-learn/sklearn')
+from sklearn.svm import NuSVC
 import importlib
 import pprint
 from transform_matrix import form_transformation_matrix, \

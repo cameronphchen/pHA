@@ -15,7 +15,9 @@ import numpy as np, scipy, random, sys, math, os, copy
 import scipy.io
 from scipy import stats
 import argparse
-from scikits.learn.svm import NuSVC
+sys.path.append('/jukebox/ramadge/pohsuan/scikit-learn/sklearn')
+from sklearn.svm import NuSVC
+#from scikits.learn.svm import NuSVC
 import importlib
 import pprint
 from transform_matrix import form_transformation_matrix, \

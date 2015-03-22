@@ -9,7 +9,7 @@ from scipy.signal import butter, lfilter
 
 subj = int(sys.argv[1])
 print 'subj {}'.format(subj)
-roi = 'pt'
+roi = 'vt'
 template_path = '/jukebox/fastscratch/pohsuan/pHA/data/raw/forest/'+\
                 'psydata.ovgu.de/forrest_gump/templates/grpbold7Tad/from_mni/'
 mask_fname = os.path.join(template_path, roi+'_mask.nii.gz')
@@ -33,7 +33,11 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     y = lfilter(b, a, data)
     return y
 
-filename = '/jukebox/ramadge/pohsuan/pHA/data/raw/forrest_'+roi+'/forrest_movie_'+roi+str(subj)+'.npz' 
+output_path = '/jukebox/ramadge/pohsuan/pHA/data/raw/forrest_'+roi+'/'
+if not os.path.exists(output_path):
+    os.mkdir(output_path)
+
+filename = output_path+'forrest_movie_'+roi+str(subj)+'.npz'
 
 if subj in [3,9]:
     subj_data = np.zeros(0)

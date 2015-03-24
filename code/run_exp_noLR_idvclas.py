@@ -36,7 +36,7 @@ parser.add_argument("nTR", type = int,
                     help="number of TRs in the dataset")
 
 parser.add_argument("exptype",    help="name of the experiment type")
-parser.add_argument("-l", "--loo", type = int, 
+parser.add_argument("l", "--loo", type = int,
                     help="whether this experiment is loo experiment")
 parser.add_argument("-e","--expopt",    help="experiment options e.g. 1st or 2nd")
 parser.add_argument("-w", "--winsize", type = int,
@@ -105,44 +105,8 @@ if args.strfresh:
 
 print 'start loading data'
 # load data for alignment and prediction
-# load movie data after voxel selection by matdata_preprocess.m 
-if args.exptype == 'imgpred':
-  image_data = scipy.io.loadmat(options['input_path']+'image_data.mat')
-  pred_data = image_data['image_data']
-
-  # load label for testing data
-  label = scipy.io.loadmat(options['input_path']+'action_label.mat')
-  label = label['label']
-  label = np.squeeze(label)
-  trn_label = np.hstack([label]*(pred_data.shape[2]-1))
-  tst_label = label
-  #trn_label = np.squeeze(np.asarray(trn_label))
-  #tst_label = np.squeeze(np.asarray(tst_label))
-  
-  movie_data = scipy.io.loadmat(options['input_path']+'movie_data.mat')
-  align_data = movie_data['movie_data'] 
-
-elif args.exptype == 'mysseg':
-  movie_data = scipy.io.loadmat(options['input_path']+'movie_data.mat')
-  movie_data = movie_data['movie_data']
-
-  movie_data_1st = movie_data[:,0:args.nTR/2,:]
-  movie_data_2nd = movie_data[:,(args.nTR/2+1):args.nTR,:]
-
-  align_data = np.zeros((movie_data_1st.shape))
-  pred_data  = np.zeros((movie_data_2nd.shape))
-
-  if '1st' == args.expopt:
-    for m in range(align_data.shape[2]):
-      align_data[:,:,m] = stats.zscore(movie_data_1st[:,:,m].T ,axis=0, ddof=1).T
-      pred_data[:,:,m]  = stats.zscore(movie_data_2nd[:,:,m].T ,axis=0, ddof=1).T
-  elif '2nd' == args.expopt:
-    for m in range(align_data.shape[2]):
-      align_data[:,:,m] = stats.zscore(movie_data_2nd[:,:,m].T ,axis=0, ddof=1).T
-      pred_data[:,:,m]  = stats.zscore(movie_data_1st[:,:,m].T ,axis=0, ddof=1).T
-  else:
-    sys.exit('missing 1st or 2nd arg for mysseg experiment')
-elif args.exptype == 'midvclas':
+# load movie data after voxel selection by matdata_preprocess.m
+if args.exptype == 'midvclas':
   if args.loo != None:
     sys.exit('no loo subject')
 
@@ -150,6 +114,8 @@ elif args.exptype == 'midvclas':
   movie_data = movie_data['movie_data']
 
   align_data = np.zeros((movie_data.shape))
+  nsubj_group = movie_data.shape[2]/2 #assuming two groups, and they have equal amount of people
+
   for m in range(align_data.shape[2]):
       align_data[:,:,m] = stats.zscore(movie_data[:,:,m].T ,axis=0, ddof=1).T
 
@@ -170,76 +136,72 @@ elif args.exptype == 'midvclas':
   for m in range(align_data.shape[2]):
       align_data[:,:,m] = align_data[:,:,m] - W[:,:,m].dot(S)
 
-  pred_data = np.copy(align_data)
+  align_data_group1 = np.copy(align_data[:,:,:nsubj_group])
+  align_data_group2 = np.copy(align_data[:,:,nsubj_group:])
+
+  pred_data = np.copy(align_data[:,:,args.loo])
 else:
   sys.exit('invalid experiment type')
 
-
 if args.loo != None:
-  align_data_loo = np.delete(align_data, args.loo,2)
+    if args.loo< nsubj_group
+        align_data_group1_loo = np.delete(align_data_group1, args.loo,2)
+        align_data_group2_loo = align_data_group2
+    else
+        align_data_group1_loo = align_data_group1
+        align_data_group2_loo = np.delete(align_data_group2, args.loo-nsubj_group,2)
 
 (nvoxel_align, nTR_align, nsubjs_align) = align_data.shape
 (nvoxel_pred , nTR_pred , nsubjs_pred)  = pred_data.shape
-nsubjs = nsubjs_pred
+
 # make sure the dimension of dataset is consistent with input args
 assert nvoxel_pred == nvoxel_align
 assert nvoxel_pred == args.nvoxel
-assert nsubjs_pred == nsubjs_align or args.loo
 
 # run alignment
 print 'start alignment'
 if args.align_algo != 'noalign':
-  algo = importlib.import_module('alignment_algo.'+args.align_algo)
-expt = importlib.import_module('experiments.'+args.exptype)
+    algo = importlib.import_module('alignment_algo.'+args.align_algo)
+
 for i in range(args.niter):
-  
-  if args.align_algo != 'noalign':
-    if args.loo == None:
-      new_niter = algo.align(align_data, options, args, '')
-    else:
-      new_niter = algo.align(align_data_loo, options, args, '')
-    # make sure right and left brain alignment are working at the same iterations
 
-  if args.align_algo in ['pica','ppca']:
-    new_niter = 10
+    if args.align_algo != 'noalign':
+        options['working_path'] += 'group1/'
+        new_niter = algo.align(align_data_group1_loo, options, args, '')
+        workspace_group1 = np.load(options['working_path']+args.align_algo+'__'+str(new_niter)+'.npz')
+        S_group1 = workspace_group1['G'].T
+        workspace_group1.close()
 
-  # load transformation matrices
-  if args.align_algo != 'noalign' :
-    workspace = np.load(options['working_path']+args.align_algo+'__'+str(new_niter)+'.npz')
-    workspace2 = np.load(options['working_path']+args.align_algo+'__'+str(new_niter)+'.npz')
-    # load transformation matrices into transform_lrh for projecting testing data
-    if args.loo == None:
-      (transform, tmp) = form_transformation_matrix.transform(args,
-                                     workspace, workspace2, nsubjs)
-    else:
-      (transform, tmp) = form_transformation_matrix_loo.transform(args,
-                                     workspace, workspace2,
-                                     align_data, copy.deepcopy(align_data), nsubjs)
-    workspace.close()
-    workspace2.close()
-  else:
-    new_niter = 10
-    (transform, tmp) = form_transformation_matrix_noalign.transform(args, nsubjs)
+        options['working_path'].replace('group1/','group2/')
+        new_niter = algo.align(align_data_group2_loo, options, args, '')
+        workspace_group2 = np.load(options['working_path']+args.align_algo+'__'+str(new_niter)+'.npz')
+        S_group2 = workspace_group2['G'].T
+        workspace_group2.close()
 
+        options['working_path'].replace('group2/','')
 
-  # transformed mkdg data with learned transformation matrices
-  transformed_data = np.zeros((args.nfeature , nTR_pred ,nsubjs))
+    Am = pred_data.dot(S_group1)
+    pert = np.zeros((Am.shape))
+    np.fill_diagonal(pert,1)
+    U1, _, V1 = np.linalg.svd(Am+0.001*pert,full_matrices=False)
 
-  for m in range(nsubjs):
-    trfed_tmp = transform[:,:,m].T.dot(pred_data[:,:,m])
-    transformed_data[:,:,m] = stats.zscore( trfed_tmp.T ,axis=0, ddof=1).T
+    Am = pred_data.dot(S_group2)
+    U2, _, V2 = np.linalg.svd(Am+0.001*pert,full_matrices=False)
 
-  # experiment
-  if args.exptype == 'imgpred':
-    if args.loo == None:
-      accu = expt.predict(transformed_data, args, trn_label, tst_label)
-    else:
-      accu = expt.predict_loo(transformed_data, args, trn_label, tst_label)  
-  elif args.exptype == 'mysseg':
-    if args.loo == None:
-      accu = expt.predict(transformed_data, args)
-    else:
-      accu = expt.predict_loo(transformed_data, args)
+    W1 = U1.dot(V1)
+    W2 = U2.dot(V2)
 
-  np.savez_compressed(options['working_path']+args.align_algo+'_acc_'+str(new_niter)+'.npz',accu = accu)
-  print np.mean(accu)
+    err1 = np.norm(pred_data-W1.dot(S_group1),'fro')
+    err2 = np.norm(pred_data-W2.dot(S_group2),'fro')
+
+    if   err1 < err2 and args.loo < 10:
+        accu = 1
+    elif err1 < err2 and args.loo > 10:
+        accu = 0
+    elif err1 > err2 and args.loo < 10:
+        accu = 0
+    elif err1 > err2 and args.loo > 10:
+        accu = 1
+
+    np.savez_compressed(options['working_path']+args.align_algo+'_acc_'+str(new_niter)+'.npz',accu = accu)
+    print np.mean(accu)

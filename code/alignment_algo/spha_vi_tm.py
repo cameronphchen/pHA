@@ -48,29 +48,32 @@ def align(movie_data, options, args, lrh):
     #bK_i   = np.identity((nvoxel,nvoxel))
 
     kernel = pyGPs.cov.RBFard(1)## remember to modify the kernel in optimization objective function
-    kernel_tm = pyGPs.cov.RBFard(1)
+    # kernel_tm = pyGPs.cov.RBFard(1) # time marked kernel
     #kernel = pyGPs.cov.SM(Q=50,D=1) ## remember to modify the kernel in optimization objective function
     #kernel = pyGPs.cov.RQ() ## remember to modify the kernel in optimization objective function
 
     T_idx = np.arange(nTR)
     T_idx = T_idx[:, None]
-    T_idx_tm = copy.deepcopy(T_idx)
+    #T_idx_tm = copy.deepcopy(T_idx)
     if use_temporal_prior:
         time_label_ws = scipy.io.loadmat(options['input_path']+'face_label.mat')
         tmp = time_label_ws['regressor_vector']
-        face_label = np.hstack([np.squeeze(tmp[4:1101]), np.squeeze(tmp[1106:2212])] )
+        shift = 1
+        print 'shift'+str(shift)
+        face_label = np.hstack([np.squeeze(tmp[shift+4:shift+1101]), np.squeeze(tmp[shift+1106:shift+2212])] )
         face_label_idx = np.where(face_label == 1)[0]
         for t in face_label_idx:
-            T_idx_tm[t] = face_label_idx[0]
+            # T_idx_tm[t] = face_label_idx[0]
+            T_idx[t] = face_label_idx[0]
 
     np.random.seed(args.randseed)
     kernel.hyp = [np.random.random() for rr in range(len(kernel.hyp))]
     np.random.seed(args.randseed)
-    kernel_tm.hyp = [np.random.random() for rr in range(len(kernel.hyp))]
+    # kernel_tm.hyp = [np.random.random() for rr in range(len(kernel.hyp))]
     btheta = kernel.hyp
-    btheta_tm = kernel_tm.hyp
+    # btheta_tm = kernel_tm.hyp
     bK_i = kernel.getCovMatrix(T_idx, T_idx, 'train')
-    bK_i_tm = kernel_tm.getCovMatrix(T_idx_tm, T_idx_tm, 'train')
+    # bK_i_tm = kernel_tm.getCovMatrix(T_idx_tm, T_idx_tm, 'train')
 
     # initialization when first time run the algorithm
     if not os.path.exists(current_file):
@@ -134,10 +137,12 @@ def align(movie_data, options, args, lrh):
         # calculate \bSig_{\bs_i}
         for m in range(nsubjs):
             tmp_sig_si += ( np.linalg.norm(bW[m*nvoxel:(m+1)*nvoxel,i])**2 )/sigma2[m]
-        if i < 5:
-            Sig_si =  scipy.linalg.inv( scipy.linalg.inv(bK_i_tm+  0.001*pert) + tmp_sig_si*np.identity(nTR) )
-        else:
-            Sig_si =  scipy.linalg.inv( scipy.linalg.inv(bK_i+  0.001*pert) + tmp_sig_si*np.identity(nTR) )
+        #if use_temporal_prior: #i < 5:
+        #    Sig_si =  scipy.linalg.inv( scipy.linalg.inv(bK_i_tm+  0.001*pert) + tmp_sig_si*np.identity(nTR) )
+        #else:
+            #Sig_si =  scipy.linalg.inv( scipy.linalg.inv(bK_i+  0.001*pert) + tmp_sig_si*np.identity(nTR) )
+        Sig_si =  scipy.linalg.inv( scipy.linalg.inv(bK_i+  0.001*pert) + tmp_sig_si*np.identity(nTR) )
+
         #tmp_log_det_Sigsi += math.log(np.linalg.det(Sig_si))
         sign , tmp_log_det_Sigsi = np.linalg.slogdet(Sig_si)
         if sign == -1:
@@ -182,6 +187,7 @@ def align(movie_data, options, args, lrh):
         sign_opt , logdet_opt = np.linalg.slogdet(bK_i_opt)
         return 0.5*nfeature*sign_opt*logdet_opt + 0.5*np.trace(bK_i_opt_inv.dot(mumuT_sum+Sig_si_sum))
 
+    """
     def obj_func(btheta_opt): # ", kernel_opt):
         kernel_opt = pyGPs.cov.RBFard(1)
         kernel_opt.hyp = btheta_opt
@@ -199,12 +205,13 @@ def align(movie_data, options, args, lrh):
         sign_opt , logdet_opt = np.linalg.slogdet(bK_i_opt)
         return 0.5*np.trace(bK_i_opt_inv.dot(bK_i_opt + mumuT_sum - Sig_si_sum).dot(bK_i_opt_inv)\
                             .dot( kernel.getDerMatrix(T_idx,T_idx,'train')))
+    """
 
     # btheta = scipy.optimize.minimize(obj_func, btheta)
     # maximize elbo == minimize -elbo
     # btheta = scipy.optimize.fmin(obj_func,btheta , (copy.deepcopy(kernel),), maxiter=10)
     btheta = scipy.optimize.fmin(obj_func, btheta, maxiter=10)
-    btheta_tm = scipy.optimize.fmin(obj_func, btheta_tm, maxiter=10)
+    # btheta_tm = scipy.optimize.fmin(obj_func, btheta_tm, maxiter=10) # time marked kernel
     print btheta,
 
     #### original error code
@@ -217,16 +224,17 @@ def align(movie_data, options, args, lrh):
     bK_i   = kernel.getCovMatrix(T_idx,T_idx,'train')
     bK_i_inv = scipy.linalg.inv(bK_i+0.001*pert)
 
-    kernel_tm.hyp = btheta_tm;
-    bK_i_tm = kernel_tm.getCovMatrix(T_idx_tm,T_idx_tm,'train')
-    bK_i_inv_tm = scipy.linalg.inv(bK_i_tm+0.001*pert)
+    # time marked kernel
+    # kernel_tm.hyp = btheta_tm;
+    # bK_i_tm = kernel_tm.getCovMatrix(T_idx_tm,T_idx_tm,'train')
+    # bK_i_inv_tm = scipy.linalg.inv(bK_i_tm+0.001*pert)
 
 
     new_niter = niter + 1
     np.savez_compressed(current_file, niter = new_niter)
     np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter)+'.npz',\
                               bW = bW, bmu=bmu, sigma2=sigma2, btheta = btheta, ES=ES, niter=new_niter)
-
+    """
     # calculate ELBO
     tmp_2rho2XmTXm = 0
     tmp_rho2WmTXm = 0
@@ -249,5 +257,5 @@ def align(movie_data, options, args, lrh):
 
     np.savez_compressed(options['working_path']+align_algo+'_'+'elbo_'+lrh+'_'+str(new_niter)+'.npz',\
                    ELBO=ELBO)
-
+    """
     return new_niter

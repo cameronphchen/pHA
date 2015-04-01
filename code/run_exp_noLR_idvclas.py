@@ -26,7 +26,7 @@ from transform_matrix import form_transformation_matrix, \
 
 ## argument parsing
 usage = '%(prog)s dataset nvoxel nTR  exptype [--loo] [--expopt] [--winsize] \
-align_algo [-k kernel] niter nfeature [-r RANDSEED] [--strfresh]'
+align_algo [-k kernel] niter nfeature_all nfeature_group [-r RANDSEED] [--strfresh]'
 parser = argparse.ArgumentParser(usage=usage)
 
 parser.add_argument("dataset",    help="name of the dataset")
@@ -48,59 +48,58 @@ parser.add_argument("-k", "--kernel", metavar='',
 
 parser.add_argument("niter"     , type = int,  
                     help="number of iterations to the algorithm")
-parser.add_argument("nfeature", type=int,
+
+parser.add_argument("nfeature_all", type=int,
                     help="number of features")
+
+parser.add_argument("nfeature_group", type=int,
+                    help="number of features")
+
 parser.add_argument("-r", "--randseed", type=int, metavar='',
                     help="random seed for initialization")
 parser.add_argument("--strfresh", action="store_true" ,
                     help="start alignment fresh, not picking up from where was left")
+parser.add_argument("--nfeature", type=int,
+                    help="number of features")
 
 
 args = parser.parse_args()
 print '--------------experiment arguments--------------'
 pprint.pprint(args.__dict__,width=1)
 
-# sanity check
-assert args.nvoxel >= args.nfeature
 
 data_folder = args.dataset+'/'+str(args.nvoxel)+'vx/'+str(args.nTR)+'TR/'
 exp_folder  = args.exptype+("_"+args.expopt  if args.expopt else "" ) + \
               ("_winsize"+str(args.winsize) if args.winsize else "" ) + '/' 
 alg_folder  = args.align_algo + ("_"+args.kernel if args.kernel else "") +'/'
-opt_folder  = str(args.nfeature) + 'feat/' + \
+opt_all_folder = 'all' + str(args.nfeature_all) + 'feat/' + \
+              ("rand"+str(args.randseed)+'/' if args.randseed != None else "identity/" )+'all/'
+
+opt_group_folder = 'all' + str(args.nfeature_all) + 'feat/' + 'group' + str(args.nfeature_group) + 'feat/' + \
               ("rand"+str(args.randseed)+'/' if args.randseed != None else "identity/" )+\
-              ("loo"+str(args.loo) if args.loo != None else "all" ) + '/'
+              "loo"+str(args.loo) + '/'
 
 # rondo options
+
+
 options = {'input_path'  : '/jukebox/ramadge/pohsuan/pHA/data/input/'+data_folder,\
            'working_path': '/fastscratch/pohsuan/pHA/data/working/'+\
-                            data_folder+exp_folder+alg_folder+opt_folder,\
+                           data_folder+exp_folder+alg_folder,\
            'output_path' : '/jukebox/ramadge/pohsuan/pHA/data/output/'+\
-                            data_folder+exp_folder+alg_folder+opt_folder}
+                            data_folder+exp_folder+alg_folder+opt_group_folder}
 print '----------------experiment paths----------------'
 pprint.pprint(options,width=1)
 print '------------------------------------------------'
 
-# sanity check of the input arguments
-if args.exptype == 'mysseg':
-  if args.winsize == None:
-    sys.exit('mysseg experiment need arg winsize')
-  if args.expopt != '1st' and args.expopt != '2nd':
-    sys.exit('mysseg experiment need expopt as 1st or 2nd')
+
+if os.path.exists(options['working_path']+opt_group_folder+args.align_algo+'_acc_'+str(10)+'.npz'):
+    sys.exit('experiment finished, early termination')
 
 # creating working folder
 if not os.path.exists(options['working_path']):
     os.makedirs(options['working_path'])
 #if not os.path.exists(options['output_path']):
     #os.makedirs(options['output_path'])
-
-if args.strfresh:
-  if os.path.exists(options['working_path']+args.align_algo+'__current.npz'):
-    os.remove(options['working_path']+args.align_algo+'__current.npz')
-  if os.path.exists(options['working_path']+'group1/'+args.align_algo+'__current.npz'):
-    os.remove(options['working_path']+'group1/'+args.align_algo+'__current.npz')
-  if os.path.exists(options['working_path']+'group2/'+args.align_algo+'__current.npz'):
-    os.remove(options['working_path']+'group2/'+args.align_algo+'__current.npz')
 
 # terminate the experiment early if the experiment is already done
 #if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
@@ -123,28 +122,31 @@ if args.exptype in ['idvclas', 'idvclas_svm']:
         align_data[:,:,m] = stats.zscore(movie_data[:,:,m].T ,axis=0, ddof=1).T
 
     # align all data to remove the shared part
-    opt_all_folder  = str(args.nfeature) + 'feat/' + \
-                ("rand"+str(args.randseed)+'/' if args.randseed != None else "identity/" )+ 'all/'
     options_all = copy.deepcopy(options)
-    options_all['working_path'] = '/fastscratch/pohsuan/pHA/data/working/'+data_folder+exp_folder+alg_folder+opt_all_folder
+    options_all['working_path'] = options['working_path']+opt_all_folder
+    args.nfeature = args.nfeature_all
+
 
     if not os.path.exists(options_all['working_path']):
-        os.mkdir(options_all['working_path'])
+        os.makedirs(options_all['working_path'])
 
-    if not os.path.exists(options_all['working_path']+args.align_algo+'__10.npz'):
-        for iter in range(10):
-            if os.path.exists(options_all['working_path']+args.align_algo+'__10.npz'):
-                break
-            algo = importlib.import_module('alignment_algo.'+args.align_algo)
-            algo.align(align_data, options_all, args, '')
-    workspace = np.load(options_all['working_path']+args.align_algo+'__10.npz')
+    if args.nfeature_all is not 0:
+        if not os.path.exists(options_all['working_path']+args.align_algo+'__10.npz'):
+            for iter in range(10):
+                if os.path.exists(options_all['working_path']+args.align_algo+'__10.npz'):
+                    break
+                algo = importlib.import_module('alignment_algo.'+args.align_algo)
+                algo.align(align_data, options_all, args, '')
 
-    W = workspace['R']
-    S = workspace['G'].T
+        workspace = np.load(options_all['working_path']+args.align_algo+'__10.npz')
 
-    #for m in range(align_data.shape[2]):
-    #    tmp = align_data[:,:,m] - W[:,:,m].dot(S)
-    #    align_data[:,:,m] = stats.zscore(tmp.T ,axis=0, ddof=1).T
+        W = workspace['R']
+        S = workspace['G'].T
+
+
+        for m in range(align_data.shape[2]):
+            tmp = align_data[:,:,m] - W[:,:,m].dot(S)
+            align_data[:,:,m] = stats.zscore(tmp.T ,axis=0, ddof=1).T
 
     align_data_group1 = np.copy(align_data[:,:,:nsubj_group])
     align_data_group2 = np.copy(align_data[:,:,nsubj_group:])
@@ -162,16 +164,24 @@ if args.loo != None:
 print 'start alignment'
 if args.align_algo != 'noalign':
     algo = importlib.import_module('alignment_algo.'+args.align_algo)
-if not os.path.exists(options['working_path']+'group1/'):
-    os.mkdir(options['working_path']+'group1/')
-if not os.path.exists(options['working_path']+'group2/'):
-    os.mkdir(options['working_path']+'group2/')
-
 
 options_group1 = copy.deepcopy(options)
-options_group1['working_path'] = options['working_path']+'group1/'
+options_group1['working_path'] = options['working_path']+opt_group_folder+'group1/'
 options_group2 = copy.deepcopy(options)
-options_group2['working_path'] = options['working_path']+'group2/'
+options_group2['working_path'] = options['working_path']+opt_group_folder+'group2/'
+args.nfeature = args.nfeature_group
+
+if args.strfresh:
+  if os.path.exists(options_group1['working_path']+args.align_algo+'__current.npz'):
+    os.remove(options_group1['working_path']+args.align_algo+'__current.npz')
+  if os.path.exists(options_group2['working_path']+args.align_algo+'__current.npz'):
+    os.remove(options_group2['working_path']+args.align_algo+'__current.npz')
+
+if not os.path.exists(options_group1['working_path']):
+    os.makedirs(options_group1['working_path'])
+if not os.path.exists(options_group2['working_path']):
+    os.makedirs(options_group2['working_path'])
+
 
 for i in range(args.niter):
     if args.align_algo != 'noalign':
@@ -243,8 +253,9 @@ for i in range(args.niter):
         clf.fit(trn_data, trn_label)
         pred_label = clf.predict(tst_data)
         print pred_label
+        print clf.decision_function(tst_data)
 
         accu = sum(pred_label == tst_label)/float(len(pred_label))
 
-    np.savez_compressed(options['working_path']+args.align_algo+'_acc_'+str(new_niter)+'.npz',accu = accu)
+    np.savez_compressed(options['working_path']+opt_group_folder+args.align_algo+'_acc_'+str(new_niter)+'.npz',accu = accu)
     print np.mean(accu)

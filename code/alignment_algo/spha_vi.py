@@ -202,6 +202,7 @@ def align(movie_data, options, args, lrh):
     np.savez_compressed(current_file, niter = new_niter)
     np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter)+'.npz',\
                               bW = bW, bmu=bmu, sigma2=sigma2, btheta = btheta, ES=ES, niter=new_niter)
+    os.remove(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter-1)+'.npz')
 
     # calculate ELBO
     tmp_2rho2XmTXm = 0

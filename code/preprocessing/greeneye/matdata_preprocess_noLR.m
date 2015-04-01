@@ -3,13 +3,13 @@
 % please put compute_voxel_ranks.m under the same directory
 nTR_str = '449'
 nvoxel_str = '5000'
-dataset = 'greeneye_tom_noLR'
+dataset = 'greeneye_tom_noLR_thr15'
 
 nTR = str2num(nTR_str)
 nvoxel = str2num(nvoxel_str)
 
 %load('/jukebox/ramadge/pohsuan/pHA/data/raw/greeneye_ac_noLR/greeneye_movie_ac_noLR.mat')
-load([ '/jukebox/ramadge/pohsuan/pHA/data/raw/' dataset '/greeneye_movie_tom_noLR.mat'])
+load([ '/jukebox/ramadge/pohsuan/pHA/data/raw/' dataset '/greeneye_movie_tom_noLR_thr15.mat'])
 
 nsubjs = size(movie_all,1);
 
@@ -26,7 +26,7 @@ data = cell(nsubjs,1);
 for i = 1:nsubjs
     data(i,1) = {movie_all{i,1}'};
 end
-[vox_corr_ranks] = compute_voxel_ranks(data,0);
+[vox_corr_ranks] = compute_voxel_ranks(data,1);
 vox_ranks = vox_corr_ranks;
 fprintf('end voxel rank \n')
 
@@ -37,7 +37,7 @@ movie_data = nan(nvoxel, nTR, nsubjs);
 
 for i = 1:nsubjs
     data_temp = movie_all{i,1};
-    movie_data(:,:,i) = data_temp(vox_ranks{i,1}(1:nvoxel),:);
+    movie_data(:,:,i) = data_temp(vox_ranks{1,1}(1:nvoxel),:);
 end
 
 assert(sum(sum(sum(isnan(movie_data)))) == 0)

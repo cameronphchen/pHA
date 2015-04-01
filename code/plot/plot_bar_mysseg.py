@@ -110,10 +110,12 @@ idx = range(len(algo_list))
 plt.figure()
 error_config = {'ecolor': '0'}
 rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_config)
+rects[0].set_color('c')
+rects[4].set_color('r')
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 plt.xlabel('Alignment Methods')
-plt.ylim([0,1])
+plt.ylim([0,0.6])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 

@@ -10,7 +10,7 @@ import numpy as np, scipy, random, sys, math, os
 from scipy import stats
 
 def align(movie_data, options, args, lrh):
-  print 'HA syn',
+  print 'HA syn' + str(args.nfeature),
   sys.stdout.flush()
 
   nvoxel = movie_data.shape[0]
@@ -20,6 +20,7 @@ def align(movie_data, options, args, lrh):
   nfeature = args.nfeature
 
   current_file = options['working_path']+align_algo+'_'+lrh+'_current.npz' 
+  print current_file
 
   movie_data_zscore = np.zeros ((nvoxel,nTR,nsubjs))
   for m in range(nsubjs):
@@ -83,4 +84,5 @@ def align(movie_data, options, args, lrh):
   np.savez_compressed(current_file, niter = new_niter)
   np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter)+'.npz',\
                       R = R, G = G, niter=new_niter)
+  os.remove(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter-1)+'.npz')
   return new_niter

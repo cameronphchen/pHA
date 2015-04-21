@@ -49,7 +49,8 @@ parser.add_argument("-w", "--winsize", type = int,
 parser.add_argument("align_algo", help="name of the alignment algorithm")
 parser.add_argument("-k", "--kernel", metavar='',
                     help="type of kernel to use")
-
+parser.add_argument("-s", "--sigma" , type = float,  
+                    help="sigma2 value")
 parser.add_argument("niter"     , type = int,  
                     help="number of iterations to the algorithm")
 parser.add_argument("nfeature", type=int, 
@@ -70,7 +71,7 @@ assert args.nvoxel >= args.nfeature
 data_folder = args.dataset+'/'+str(args.nvoxel)+'vx/'+str(args.nTR)+'TR/'
 exp_folder  = args.exptype+("_"+args.expopt  if args.expopt else "" ) + \
               ("_winsize"+str(args.winsize) if args.winsize else "" ) + '/' 
-alg_folder  = args.align_algo + ("_"+args.kernel if args.kernel else "") +'/'
+alg_folder  = args.align_algo + ("_kr"+args.kernel if args.kernel else "") +("_sig"+str(args.sigma) if args.sigma is not None else "")+'/'
 opt_folder  = str(args.nfeature) + 'feat/' + \
               ("rand"+str(args.randseed)+'/' if args.randseed != None else "identity/" )+\
               ("loo"+str(args.loo) if args.loo != None else "all" ) + '/'
@@ -99,14 +100,27 @@ if not os.path.exists(options['working_path']):
     #os.makedirs(options['output_path'])
 
 if args.strfresh:
-  if os.path.exists(options['working_path']+args.align_algo+'_rh_current.npz'):
-    os.remove(options['working_path']+args.align_algo+'_rh_current.npz')
-  if os.path.exists(options['working_path']+args.align_algo+'_lh_current.npz'):
-    os.remove(options['working_path']+args.align_algo+'_lh_current.npz')
+    if os.path.exists(options['working_path']+args.align_algo+'_rh_current.npz'):
+        os.remove(options['working_path']+args.align_algo+'_rh_current.npz')
+    if os.path.exists(options['working_path']+args.align_algo+'_lh_current.npz'):
+        os.remove(options['working_path']+args.align_algo+'_lh_current.npz')
+else:
+    if os.path.exists(options['working_path']+args.align_algo+'_lh_current.npz') \
+      and os.path.exists(options['working_path']+args.align_algo+'_rh_current.npz'):
+        wslh = np.load(options['working_path']+args.align_algo+'_lh_current.npz')
+        wsrh = np.load(options['working_path']+args.align_algo+'_rh_current.npz')
+        tmp_niter = min(wslh['niter'],wsrh['niter'])
+        np.savez_compressed(options['working_path']+args.align_algo+'_lh_current.npz', niter = tmp_niter)
+        np.savez_compressed(options['working_path']+args.align_algo+'_rh_current.npz', niter = tmp_niter)
+    else:
+        if os.path.exists(options['working_path']+args.align_algo+'_rh_current.npz'):
+            os.remove(options['working_path']+args.align_algo+'_rh_current.npz')
+        if os.path.exists(options['working_path']+args.align_algo+'_lh_current.npz'):
+            os.remove(options['working_path']+args.align_algo+'_lh_current.npz')
 
 # terminate the experiment early if the experiment is already done
 #if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
-#  sys.exit('experiment already finished, early termination')
+#    sys.exit('experiment already finished, early termination')
 
 
 print 'start loading data'
@@ -141,10 +155,16 @@ elif args.exptype == 'mysseg':
   movie_data_lh = movie_data_lh['movie_data_lh'] 
   movie_data_rh = movie_data_rh['movie_data_rh'] 
 
-  movie_data_lh_1st = movie_data_lh[:,0:args.nTR/2,:]
-  movie_data_lh_2nd = movie_data_lh[:,(args.nTR/2+1):args.nTR,:]
-  movie_data_rh_1st = movie_data_rh[:,0:args.nTR/2,:]
-  movie_data_rh_2nd = movie_data_rh[:,(args.nTR/2+1):args.nTR,:]
+  if args.nTR % 2 == 0:
+    movie_data_lh_1st = movie_data_lh[:,0:args.nTR/2,:]
+    movie_data_lh_2nd = movie_data_lh[:,(args.nTR/2):args.nTR,:]
+    movie_data_rh_1st = movie_data_rh[:,0:args.nTR/2,:]
+    movie_data_rh_2nd = movie_data_rh[:,(args.nTR/2):args.nTR,:]
+  else:
+    movie_data_lh_1st = movie_data_lh[:,0:args.nTR/2,:]
+    movie_data_lh_2nd = movie_data_lh[:,(args.nTR/2+1):args.nTR,:]
+    movie_data_rh_1st = movie_data_rh[:,0:args.nTR/2,:]
+    movie_data_rh_2nd = movie_data_rh[:,(args.nTR/2)+1:args.nTR,:]
 
   align_data_lh = np.zeros((movie_data_lh_1st.shape))
   align_data_rh = np.zeros((movie_data_rh_1st.shape))
@@ -224,8 +244,11 @@ for i in range(args.niter):
 
   for m in range(nsubjs):
     trfed_lh_tmp = transform_lh[:,:,m].T.dot(pred_data_lh[:,:,m])
+    #np.savez_compressed(options['working_path']+args.align_algo+'_trfed_lh_'+str(new_niter_lh)+'.npz',trfed_lh = trfed_lh_tmp)
     trfed_rh_tmp = transform_rh[:,:,m].T.dot(pred_data_rh[:,:,m])
+    #np.savez_compressed(options['working_path']+args.align_algo+'_trfed_rh_'+str(new_niter_lh)+'.npz',trfed_rh = trfed_rh_tmp)
     transformed_data[:,:,m] = stats.zscore( np.vstack((trfed_lh_tmp,trfed_rh_tmp)).T ,axis=0, ddof=1).T
+  #np.savez_compressed(options['working_path']+args.align_algo+'_trfed_'+str(new_niter_lh)+'.npz',transformed_data = transformed_data)
 
   # experiment
   if args.exptype == 'imgpred':

@@ -14,7 +14,7 @@ def transform(args, workspace_lh ,workspace_rh, align_data_lh, align_data_rh, ns
   align_data_lh_loo_zscore = stats.zscore(align_data_lh[:,:,loo].T ,axis=0, ddof=1).T 
   align_data_rh_loo_zscore = stats.zscore(align_data_rh[:,:,loo].T ,axis=0, ddof=1).T
 
-  if args.align_algo in ['ha', 'ha_syn']:
+  if args.align_algo in ['ha', 'ha_syn', 'ha_syn_noagg']:
     bW_lh = workspace_lh['R']
     bW_rh = workspace_rh['R']
     for m in range(nsubjs-1):

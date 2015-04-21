@@ -45,6 +45,8 @@ parser.add_argument("-w", "--winsize", type = int,
 parser.add_argument("align_algo", help="name of the alignment algorithm")
 parser.add_argument("-k", "--kernel", metavar='',
                     help="type of kernel to use")
+parser.add_argument("-s", "--sigma" , type = float,  
+                    help="sigma2 value")
 
 parser.add_argument("niter"     , type = int,  
                     help="number of iterations to the algorithm")
@@ -66,7 +68,7 @@ assert args.nvoxel >= args.nfeature
 data_folder = args.dataset+'/'+str(args.nvoxel)+'vx/'+str(args.nTR)+'TR/'
 exp_folder  = args.exptype+("_"+args.expopt  if args.expopt else "" ) + \
               ("_winsize"+str(args.winsize) if args.winsize else "" ) + '/' 
-alg_folder  = args.align_algo + ("_"+args.kernel if args.kernel else "") +'/'
+alg_folder  = args.align_algo + ("_"+args.kernel if args.kernel else "") +( "_sig"+str(args.sigma) if args.sigma is not None else "")+'/'
 opt_folder  = str(args.nfeature) + 'feat/' + \
               ("rand"+str(args.randseed)+'/' if args.randseed != None else "identity/" )+\
               ("loo"+str(args.loo) if args.loo != None else "all" ) + '/'
@@ -99,8 +101,8 @@ if args.strfresh:
     os.remove(options['working_path']+args.align_algo+'__current.npz')
 
 # terminate the experiment early if the experiment is already done
-#if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
-#  sys.exit('experiment already finished, early termination')
+if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
+    sys.exit('experiment already finished, early termination')
 
 
 print 'start loading data'
@@ -126,8 +128,12 @@ elif args.exptype == 'mysseg':
   movie_data = scipy.io.loadmat(options['input_path']+'movie_data.mat')
   movie_data = movie_data['movie_data']
 
-  movie_data_1st = movie_data[:,0:args.nTR/2,:]
-  movie_data_2nd = movie_data[:,(args.nTR/2+1):args.nTR,:]
+  if args.nTR % 2 == 0:
+    movie_data_1st = movie_data[:,0:args.nTR/2,:]
+    movie_data_2nd = movie_data[:,(args.nTR/2):args.nTR,:]
+  else:
+    movie_data_1st = movie_data[:,0:args.nTR/2,:]
+    movie_data_2nd = movie_data[:,(args.nTR/2+1):args.nTR,:]
 
   align_data = np.zeros((movie_data_1st.shape))
   pred_data  = np.zeros((movie_data_2nd.shape))
@@ -209,7 +215,7 @@ for i in range(args.niter):
       accu = expt.predict_loo(transformed_data, args, trn_label, tst_label)  
   elif args.exptype == 'mysseg':
     if args.loo == None:
-      accu = expt.predict(transformed_data, args)
+      accu = expt.predict(transformed_data, args, options)
     else:
       accu = expt.predict_loo(transformed_data, args)
 

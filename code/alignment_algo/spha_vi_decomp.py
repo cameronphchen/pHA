@@ -75,10 +75,16 @@ def align(movie_data, options, args, lrh):
         else:
             Q = np.identity(nvoxel)
 
+        if 'sigma' in args.__dict__:
+            print 'sigma2{}'.format(args.sigma)
+
         for m in range(nsubjs):
             bW[m*nvoxel:(m+1)*nvoxel,:] = Q
             bmu[m*nvoxel:(m+1)*nvoxel] = np.mean(bX[m*nvoxel:(m+1)*nvoxel,:],1)
-            sigma2[m] = 1
+            if args.sigma is not None: 
+                sigma2[m] = args.sigma
+            else:
+                sigma2[m] = 1
 
         niter = 0
         np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(niter)+'.npz',\
@@ -151,17 +157,18 @@ def align(movie_data, options, args, lrh):
             sign_opt , logdet_opt = np.linalg.slogdet(bK_i_opt)
             return 0.5*nfeature*sign_opt*logdet_opt + 0.5*np.trace(bK_i_opt_inv.dot(mumuT_sum+Sig_si))
 
-        btheta[i, :] = scipy.optimize.fmin(obj_func, btheta[i, :], maxiter=50, disp=0)
+        btheta[i, :] = scipy.optimize.fmin(obj_func, btheta[i, :], maxiter=100, disp=0)
 
     for m in range(nsubjs):
         Am = bX[m*nvoxel:(m+1)*nvoxel,:].dot(ES.T)
         Um, sm, Vm = np.linalg.svd(Am, full_matrices=False)
 
         bW[m*nvoxel:(m+1)*nvoxel,:] = Um.dot(Vm)
-        tmp_sigma2 =   np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bX[m*nvoxel:(m+1)*nvoxel,:])) \
-                      -2*np.trace(ES.T.dot(bW[m*nvoxel:(m+1)*nvoxel,:].T).dot(bX[m*nvoxel:(m+1)*nvoxel,:]))\
-                      +np.trace(ES.dot(ES.T)) + tmp_sum_tr_Sig_si
-        sigma2[m] = nTR / tmp_sigma2
+        if args.sigma is None: 
+            tmp_sigma2 =   np.trace(bX[m*nvoxel:(m+1)*nvoxel,:].T.dot(bX[m*nvoxel:(m+1)*nvoxel,:])) \
+                          -2*np.trace(ES.T.dot(bW[m*nvoxel:(m+1)*nvoxel,:].T).dot(bX[m*nvoxel:(m+1)*nvoxel,:]))\
+                          +np.trace(ES.dot(ES.T)) + tmp_sum_tr_Sig_si
+            sigma2[m] = nTR / tmp_sigma2
 
     print btheta
 
@@ -169,9 +176,10 @@ def align(movie_data, options, args, lrh):
     np.savez_compressed(current_file, niter = new_niter)
     np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter)+'.npz',\
                               bW = bW, bmu=bmu, sigma2=sigma2, btheta = btheta, ES=ES, niter=new_niter)
-    os.remove(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter-1)+'.npz')
+    #os.remove(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter-1)+'.npz')
 
     # calculate ELBO
+
     tmp_2rho2XmTXm = 0
     tmp_rho2WmTXm = 0
     tmp_1over2rho2 = 0

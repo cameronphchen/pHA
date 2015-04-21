@@ -34,7 +34,6 @@ def align(movie_data, options, args, lrh):
 
     align_algo = args.align_algo
     nfeature   = args.nfeature
-    use_temporal_prior = False
 
     current_file = options['working_path']+align_algo+'_'+lrh+'_current.npz'
     # zscore the data
@@ -53,12 +52,6 @@ def align(movie_data, options, args, lrh):
 
     T_idx = np.arange(nTR)
     T_idx = T_idx[:, None]
-    if use_temporal_prior:
-        time_label_ws = scipy.io.loadmat(options['input_path']+'face_label.mat')
-        tmp = time_label_ws['regressor_vector']
-        face_label = np.hstack([np.squeeze(tmp[4:1101]), np.squeeze(tmp[1106:2212])] )
-        for t in np.where(face_label == 1):
-            T_idx[t] = 1
 
     np.random.seed(args.randseed)
     kernel.hyp = [np.random.random() for rr in range(len(kernel.hyp))]

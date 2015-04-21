@@ -4,6 +4,7 @@ import pprint
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from scipy import stats
 import math
 import sys
@@ -41,7 +42,7 @@ pkl_file.close()
 
 name = []
 for algo in algo_list:
-  name.append(algo['name'])
+  name.append(algo['name'].replace('_','-'))
 
 
 all_mean = np.zeros((len(name)))
@@ -104,18 +105,34 @@ font = {'family' : 'serif',
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-aspectratio=4
-idx = range(len(algo_list))
+"""
+params = {
+   'axes.labelsize': 8,
+   'text.fontsize': 8,
+   'legend.fontsize': 10,
+   'xtick.labelsize': 6,
+   'ytick.labelsize': 8,
+   'text.usetex': False,
+   #'figure.figsize': [2, 4] # instead of 4.5, 4.5
+   }
+mpl.rcParams.update(params)
+"""
 
+aspectratio=6
+width=0.5
+#idx = range(len(algo_list))
+idx = np.arange(0,len(name)*0.5,width)
+#idx = np.array(range(len(algo_list)))
+print idx
 plt.figure()
 error_config = {'ecolor': '0'}
-rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_config)
-rects[3].set_color('r')
+rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_config, width =  width, edgecolor='white')
+#rects[3].set_color('r')
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 #plt.xlabel('Alignment Methods')
-plt.xlim([-1,7])
-plt.ylim([0,0.6])
+plt.xlim([-0.5,len(name)*0.5])
+plt.ylim([0,1])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 
@@ -124,13 +141,15 @@ def autolabel(rects):
     for rect in rects:
         height = rect.get_height()
         plt.axes().text(rect.get_x()+rect.get_width()/2., height+0.03, '%.3f'%float(height),
-                ha='center', va='bottom')
+                ha='center', va='bottom',fontsize=8)
 
 autolabel(rects)
-#plt.text(.12, .05, 'Movie Segment Classification', horizontalalignment='left', verticalalignment='bottom')
+plt.text(0.02, .95, '9TR Time Segment Classification', horizontalalignment='left', verticalalignment='bottom',transform=plt.axes().transAxes)
+plt.text(0.02, .92, 'Dataset: raider', horizontalalignment='left', verticalalignment='bottom',transform=plt.axes().transAxes)
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
-plt.title('Movie Segment ({}TRs) Classification LOO {} {}vx {}TRs'.format(args.winsize, args.dataset.replace('_','-'),args.nvoxel, args.nTR))
+#plt.title('Movie Segment ({}TRs) Classification LOO {} {}vx {}TRs'.format(args.winsize, args.dataset.replace('_','-'),args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
                 'mysseg_loo', str(args.winsize)+'winsize' , args.niter+'thIter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
+np.savez_compressed(output_path + '_'.join(filename_list) + '.npz',name = name, all_mean = all_mean, all_se = all_se)
 

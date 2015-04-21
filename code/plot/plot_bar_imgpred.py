@@ -120,5 +120,5 @@ filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' 
                 'imgpred_'+ args.niter+'thIter']
 
 print '_'.join(filename_list)
-plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
+plt.savefig(output_path + '_'.join(filename_list) + '_spha.eps', format='eps', dpi=200,bbox_inches='tight')
 

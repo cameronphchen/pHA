@@ -110,12 +110,11 @@ idx = range(len(algo_list))
 plt.figure()
 error_config = {'ecolor': '0'}
 rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_config)
-rects[0].set_color('c')
-rects[4].set_color('r')
+
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 plt.xlabel('Alignment Methods')
-plt.ylim([0,0.6])
+plt.ylim([0,0.3])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 
@@ -132,5 +131,5 @@ autolabel(rects)
 plt.title('Movie Segment ({}TRs) Classification {} {}vx {}TRs'.format(args.winsize, args.dataset.replace('_','-') ,args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
                 'mysseg', str(args.winsize)+'winsize' , args.niter+'thIter']
-plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
+plt.savefig(output_path + '_'.join(filename_list) + '_spha.eps', format='eps', dpi=200,bbox_inches='tight')
 

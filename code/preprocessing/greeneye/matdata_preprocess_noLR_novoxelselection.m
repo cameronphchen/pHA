@@ -1,14 +1,10 @@
 %function matdata_preprocess(nvoxel_str, nTR_str)
 
 % please put compute_voxel_ranks.m under the same directory
-%nTR_str = '449'
-%nvoxel_str = '3427'
-dataset = 'greeneye_ac_noLR'
+dataset = 'greeneye'
+arg = 'pccprecun'
 
-%nTR = str2num(nTR_str)
-%nvoxel = str2num(nvoxel_str)
-
-load('/jukebox/ramadge/pohsuan/pHA/data/raw/greeneye_ac_noLR/greeneye_movie_ac_noLR.mat')
+load(['/jukebox/ramadge/pohsuan/pHA/data/raw/greeneye_pccprecun/greeneye_movie_' arg '.mat'])
 
 nsubjs = size(movie_all,1);
 nvoxel = size(movie_all{1,1},1);
@@ -29,8 +25,8 @@ end
 assert(sum(sum(sum(isnan(movie_data)))) == 0)
 assert(sum(sum(sum(~movie_data))) == 0)
 
-output_path = ['/jukebox/ramadge/pohsuan/pHA/data/input/' dataset '/' nvoxel_str 'vx/' nTR_str 'TR/']
+output_path = ['/jukebox/ramadge/pohsuan/pHA/data/input/' dataset '_' arg '_noLR/' int2str(nvoxel) 'vx/' int2str(nTR) 'TR/']
 
-%mkdir(output_path)
-%save([output_path 'movie_data_novxsel.mat'],'movie_data');
+mkdir(output_path)
+save([output_path 'movie_data.mat'],'movie_data');
 

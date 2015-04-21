@@ -2,14 +2,14 @@
 
 % please put compute_voxel_ranks.m under the same directory
 nTR_str = '449'
-nvoxel_str = '5000'
-dataset = 'greeneye_tom_noLR_thr15'
+nvoxel_str = '2000'
+dataset = 'greeneye_ac_noLR_thr15'
 
 nTR = str2num(nTR_str)
 nvoxel = str2num(nvoxel_str)
 
 %load('/jukebox/ramadge/pohsuan/pHA/data/raw/greeneye_ac_noLR/greeneye_movie_ac_noLR.mat')
-load([ '/jukebox/ramadge/pohsuan/pHA/data/raw/' dataset '/greeneye_movie_tom_noLR_thr15.mat'])
+load([ '/jukebox/ramadge/pohsuan/pHA/data/raw/' dataset '/greeneye_movie_ac_noLR_thr15.mat'])
 
 nsubjs = size(movie_all,1);
 

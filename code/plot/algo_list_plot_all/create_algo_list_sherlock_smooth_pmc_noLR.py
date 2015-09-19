@@ -2,23 +2,23 @@ import pickle
 
 algo_list = []
 
-
+"""
 algo = {'name': 'MNI 152',
   'align_algo': 'noalign',
-  'nfeature': '873',
+  'nfeature': '813',
   'kernel': None,
   'rand': False
 }
 algo_list.append(algo)
+"""
 
-algo = {'name': 'HA (873)',
+algo = {'name': 'HA (813)',
   'align_algo': 'ha',
-  'nfeature': '873',
+  'nfeature': '813',
   'kernel': None,
   'rand': False
 }
 algo_list.append(algo)
-
 
 algo = {
   'name': 'pHAc 10',
@@ -48,15 +48,6 @@ algo = {
 algo_list.append(algo)
 
 algo = {
-  'name': 'pHAc 200',
-  'align_algo': 'ha_syn',
-  'nfeature': '200',
-  'kernel': None,
-  'rand': True
-}
-algo_list.append(algo)
-
-algo = {
   'name': 'pHAc 400',
   'align_algo': 'ha_syn',
   'nfeature': '400',
@@ -66,28 +57,29 @@ algo = {
 algo_list.append(algo)
 
 algo = {
-  'name': 'pHAc 873',
+  'name': 'pHAc 813',
   'align_algo': 'ha_syn',
-  'nfeature': '873',
+  'nfeature': '813',
   'kernel': None,
   'rand': True
 }
 algo_list.append(algo)
 
 
-"""
+
 algo = {
-  'name': 'spha_vi 10',
-  'align_algo': 'spha_vi',
+  'name': 'pHA 10',
+  'align_algo': 'pha_em',
   'nfeature': '10',
   'kernel': None,
   'rand': True
 }
 algo_list.append(algo)
 
+
 algo = {
-  'name': 'spha_vi 50',
-  'align_algo': 'spha_vi',
+  'name': 'pHA 50',
+  'align_algo': 'pha_em',
   'nfeature': '50',
   'kernel': None,
   'rand': True
@@ -95,15 +87,40 @@ algo = {
 algo_list.append(algo)
 
 algo = {
-  'name': 'spha_vi 100',
-  'align_algo': 'spha_vi',
+  'name': 'pHA 100',
+  'align_algo': 'pha_em',
   'nfeature': '100',
   'kernel': None,
   'rand': True
 }
 algo_list.append(algo)
-"""
 
+algo = {
+  'name': 'pHA 400',
+  'align_algo': 'pha_em',
+  'nfeature': '400',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'pHA 813',
+  'align_algo': 'pha_em',
+  'nfeature': '813',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'spha_vi 400',
+  'align_algo': 'spha_vi',
+  'nfeature': '400',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
 # write python dict to a file
 output = open('algo_list.pkl', 'wb')
 pickle.dump(algo_list, output)

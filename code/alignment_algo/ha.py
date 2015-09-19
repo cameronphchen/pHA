@@ -75,4 +75,5 @@ def align(movie_data, options, args, lrh):
   np.savez_compressed(current_file, niter = new_niter)
   np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter)+'.npz',\
                       R = R, G = G, niter=new_niter)
+  os.remove(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter-1)+'.npz')
   return new_niter

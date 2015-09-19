@@ -11,6 +11,7 @@ import os
 import sys
 
 parser = argparse.ArgumentParser()
+parser.add_argument("tag",    help="all or paper")
 parser.add_argument("dataset",    help="name of the dataset")
 parser.add_argument("nvoxel", 
                     help="number of voxels in the dataset")
@@ -29,7 +30,8 @@ pprint.pprint(args.__dict__,width=1)
 
 #####################List out all the algos to show in fig#####################
 
-os.system("python create_algo_list.py")
+os.system('python algo_list_plot_loo_{}/create_algo_list_{}.py'.format(args.tag,args.dataset))
+print 'python algo_list_plot_loo_{}/create_algo_list_{}.py'.format(args.tag,args.dataset)
 pkl_file = open('algo_list.pkl', 'rb')
 algo_list = pickle.load(pkl_file)
 pkl_file.close()
@@ -97,8 +99,8 @@ font = {'family' : 'serif',
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-all_mean = np.insert(all_mean,1,0.632)
-all_se = np.insert(all_se,1,0.021)
+all_mean = np.insert(all_mean,1,0.633)
+all_se = np.insert(all_se,1,0.018)
 name.insert(1,'Within Subject')
 
 aspectratio=3
@@ -116,7 +118,7 @@ plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 #plt.xlabel('Alignment Methods')
 plt.xlim([-0.5,len(name)*0.5])
-plt.ylim([0.25,0.9])
+plt.ylim([0,0.5])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 
@@ -137,3 +139,4 @@ filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' 
                 'imgpred_loo_'+ args.niter+'thIter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 np.savez_compressed(output_path + '_'.join(filename_list) + '.npz',name = name, all_mean = all_mean, all_se = all_se)
+print output_path + '_'.join(filename_list) + '.npz'

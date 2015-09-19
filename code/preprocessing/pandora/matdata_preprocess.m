@@ -3,7 +3,7 @@
 % please put compute_voxel_ranks.m under the same directory
 nTR_str = '1224'
 nvoxel_str = '1000'
-dataset = 'pandora_ac_bphp-1lp2.25'
+dataset = 'pandora_ac_bphp37.5lp1'
 
 nTR = str2num(nTR_str)
 nvoxel = str2num(nvoxel_str)

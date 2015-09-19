@@ -3,8 +3,8 @@
 #for subj in $(seq -f %03g 001 001)
 #do
 subj=$1
-hp=-1 #37.5 #150second/2(for sigma)/2(1TR = 2 sec)
-lp=2.25   #9/2/2
+hp=37.5 #37.5 #150second/2(for sigma)/2(1TR = 2 sec)
+lp=1.5   #9/2/2
 for run in $(seq -f %03g 001 008)
 do
     echo $subj,$run

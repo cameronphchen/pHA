@@ -13,6 +13,7 @@ import pickle
 import os
 
 parser = argparse.ArgumentParser()
+parser.add_argument("tag",    help="all or paper")
 parser.add_argument("dataset",    help="name of the dataset")
 parser.add_argument("nvoxel", 
                     help="number of voxels in the dataset")
@@ -27,13 +28,15 @@ parser.add_argument("niter"     ,
 parser.add_argument("nrand"     , type = int,  
                     help="number of random initilization to average")
 
+
+
 args = parser.parse_args()
 print '--------------experiment arguments--------------'
 pprint.pprint(args.__dict__,width=1)
 
 #####################List out all the algos to show in fig#####################
 
-os.system("python create_algo_list.py")
+os.system('python algo_list_plot_loo_{}/create_algo_list_{}.py'.format(args.tag,args.dataset))
 pkl_file = open('algo_list.pkl', 'rb')
 algo_list = pickle.load(pkl_file)
 pkl_file.close()
@@ -145,11 +148,11 @@ def autolabel(rects):
 
 autolabel(rects)
 plt.text(0.02, .95, '9TR Time Segment Classification', horizontalalignment='left', verticalalignment='bottom',transform=plt.axes().transAxes)
-plt.text(0.02, .92, 'Dataset: raider', horizontalalignment='left', verticalalignment='bottom',transform=plt.axes().transAxes)
+plt.text(0.02, .92, 'Dataset: {}'.format(args.dataset.replace('_','-')), horizontalalignment='left', verticalalignment='bottom',transform=plt.axes().transAxes)
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
 #plt.title('Movie Segment ({}TRs) Classification LOO {} {}vx {}TRs'.format(args.winsize, args.dataset.replace('_','-'),args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'mysseg_loo', str(args.winsize)+'winsize' , args.niter+'thIter']
+                'mysseg_loo', str(args.winsize)+'winsize' , args.niter+'thIter' , args.tag]
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 np.savez_compressed(output_path + '_'.join(filename_list) + '.npz',name = name, all_mean = all_mean, all_se = all_se)
 

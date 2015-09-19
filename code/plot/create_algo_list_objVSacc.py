@@ -2,9 +2,11 @@ import pickle
 
 algo_list = []
 
+
+
 algo = {
-  'name': 'pHAc 50',
-  'align_algo': 'ha_syn',
+  'name': 'gen. 50',
+  'align_algo': 'ha_syn_noagg',
   'nfeature': '50',
   'kernel': None,
   'rand': True
@@ -12,8 +14,8 @@ algo = {
 algo_list.append(algo)
 
 algo = {
-  'name': 'pHAc 100',
-  'align_algo': 'ha_syn',
+  'name': 'gen. 100',
+  'align_algo': 'ha_syn_noagg',
   'nfeature': '100',
   'kernel': None,
   'rand': True
@@ -21,8 +23,8 @@ algo = {
 algo_list.append(algo)
 
 algo = {
-  'name': 'pHAc 500',
-  'align_algo': 'ha_syn',
+  'name': 'gen. 500',
+  'align_algo': 'ha_syn_noagg',
   'nfeature': '500',
   'kernel': None,
   'rand': True
@@ -30,9 +32,27 @@ algo = {
 algo_list.append(algo)
 
 algo = {
-  'name': 'pHAc 1000',
-  'align_algo': 'ha_syn',
-  'nfeature': '1000',
+  'name': 'analy. 50',
+  'align_algo': 'ha_sm_retraction',
+  'nfeature': '50',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'analy. 100',
+  'align_algo': 'ha_sm_retraction',
+  'nfeature': '100',
+  'kernel': None,
+  'rand': True
+}
+algo_list.append(algo)
+
+algo = {
+  'name': 'anal. 500',
+  'align_algo': 'ha_sm_retraction',
+  'nfeature': '500',
   'kernel': None,
   'rand': True
 }

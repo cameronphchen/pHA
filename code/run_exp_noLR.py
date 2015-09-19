@@ -101,8 +101,8 @@ if args.strfresh:
     os.remove(options['working_path']+args.align_algo+'__current.npz')
 
 # terminate the experiment early if the experiment is already done
-if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
-    sys.exit('experiment already finished, early termination')
+#if os.path.exists(options['working_path']+args.align_algo+'_acc_10.npz'):
+#    sys.exit('experiment already finished, early termination')
 
 
 print 'start loading data'
@@ -206,6 +206,7 @@ for i in range(args.niter):
   for m in range(nsubjs):
     trfed_tmp = transform[:,:,m].T.dot(pred_data[:,:,m])
     transformed_data[:,:,m] = stats.zscore( trfed_tmp.T ,axis=0, ddof=1).T
+    #transformed_data[:,:,m] = trfed_tmp
 
   # experiment
   if args.exptype == 'imgpred':

@@ -17,6 +17,7 @@ from scipy import stats
 import argparse
 sys.path.append('/jukebox/ramadge/pohsuan/scikit-learn/sklearn')
 from sklearn.svm import NuSVC
+from sklearn import preprocessing
 #from scikits.learn.svm import NuSVC
 import importlib
 import pprint
@@ -108,7 +109,7 @@ if not os.path.exists(options['working_path']):
 print 'start loading data'
 # load data for alignment and prediction
 # load movie data after voxel selection by matdata_preprocess.m
-if args.exptype in ['idvclas', 'idvclas_svm']:
+if args.exptype in ['idvclas', 'idvclas_svm', 'idvclas_svm_no2ndSRM','idvclas_svm_on1st']:
     if args.loo == None:
         sys.exit('no loo subject')
 
@@ -143,10 +144,17 @@ if args.exptype in ['idvclas', 'idvclas_svm']:
         W = workspace['R']
         S = workspace['G'].T
 
+        if args.exptype != 'idvclas_svm_on1st':
+            for m in range(align_data.shape[2]):
+                tmp = align_data[:,:,m] - W[:,:,m].dot(S)
+                align_data[:,:,m] = stats.zscore(tmp.T ,axis=0, ddof=1).T
+        elif args.exptype == 'idvclas_svm_on1st':
+            for m in range(align_data.shape[2]):
+                tmp = W[:,:,m].dot(S)
+                align_data[:,:,m] = stats.zscore(tmp.T ,axis=0, ddof=1).T    
+    else:
+        print 'shared all feature = 0'        
 
-        for m in range(align_data.shape[2]):
-            tmp = align_data[:,:,m] - W[:,:,m].dot(S)
-            align_data[:,:,m] = stats.zscore(tmp.T ,axis=0, ddof=1).T
 
     align_data_group1 = np.copy(align_data[:,:,:nsubj_group])
     align_data_group2 = np.copy(align_data[:,:,nsubj_group:])
@@ -183,8 +191,8 @@ if not os.path.exists(options_group2['working_path']):
     os.makedirs(options_group2['working_path'])
 
 
-for i in range(args.niter):
-    if args.align_algo != 'noalign':
+for itr in range(args.niter):
+    if  args.align_algo not in ['noalign'] and  args.exptype not in ['idvclas_svm_no2ndSRM','idvclas_svm_on1st']:
 
         print '\nalign group1'
         new_niter = algo.align(align_data_group1_loo, options_group1, args, '')
@@ -202,6 +210,7 @@ for i in range(args.niter):
         #S_group2 = stats.zscore(workspace_group2['G'],axis=0, ddof=1).T
         workspace_group2.close()
 
+    print args.exptype
     if args.exptype == 'idvclas':
         accu = []
         for label, pred_data in enumerate([pred_data_group1, pred_data_group2]):
@@ -249,13 +258,111 @@ for i in range(args.niter):
         tst_label[0] = 0
         tst_label[1] = 1
 
+        """
+        print 'standardization'
+        print trn_data
+        print tst_data
+        trn_data_scaled = preprocessing.scale(trn_data)
+        tst_data_scaled = preprocessing.scale(tst_data)
+        print trn_data_scaled
+        print tst_data_scaled
+        clf = NuSVC(nu=0.5, kernel = 'linear')
+        clf.fit(trn_data_scaled, trn_label)
+        pred_label = clf.predict(tst_data_scaled)
+        print pred_label
+        print clf.decision_function(tst_data_scaled)
+        accu = sum(pred_label == tst_label)/float(len(pred_label))
+        """
+    
+    elif args.exptype == 'idvclas_svm_no2ndSRM':
+        dim = args.nvoxel*args.nTR
+        trn_data  = np.zeros((nsubj_group*2-2, dim))
+        tst_data  = np.zeros((2, dim))
+
+        trn_label = np.zeros(nsubj_group*2-2)
+        tst_label = np.zeros(2)
+
+        for i in xrange(align_data_group1_loo.shape[2]):
+            trn_data[i,:] = align_data_group1_loo[:,:,i].reshape(1, dim)
+            trn_label[i] = 0
+            trn_data[i+nsubj_group-1,:] = align_data_group2_loo[:,:,i].reshape(1, dim)
+            trn_label[i+nsubj_group-1] = 1
+
+        tst_data[0, :] = pred_data_group1.reshape(1, dim)
+        tst_data[1, :] = pred_data_group2.reshape(1, dim)
+        tst_label[0] = 0
+        tst_label[1] = 1
+
+        """
+        print 'standardization'
+        trn_data_scaled = preprocessing.scale(trn_data)
+        tst_data_scaled = preprocessing.scale(tst_data)
+        print trn_data_scaled
+        print tst_data_scaled
+        clf = NuSVC(nu=0.5, kernel = 'linear')
+        clf.fit(trn_data_scaled, trn_label)
+        pred_label = clf.predict(tst_data_scaled)
+        print pred_label
+        print clf.decision_function(tst_data_scaled)
+        accu = sum(pred_label == tst_label)/float(len(pred_label))
+        """
+
+    elif args.exptype == 'idvclas_svm_on1st':
+        dim = args.nvoxel*args.nTR
+        trn_data  = np.zeros((nsubj_group*2-2, dim))
+        tst_data  = np.zeros((2, dim))
+
+        trn_label = np.zeros(nsubj_group*2-2)
+        tst_label = np.zeros(2)
+
+        for i in xrange(align_data_group1_loo.shape[2]):
+            trn_data[i,:] = align_data_group1_loo[:,:,i].reshape(1, dim)
+            trn_label[i] = 0
+            trn_data[i+nsubj_group-1,:] = align_data_group2_loo[:,:,i].reshape(1, dim)
+            trn_label[i+nsubj_group-1] = 1
+
+        tst_data[0, :] = pred_data_group1.reshape(1, dim)
+        tst_data[1, :] = pred_data_group2.reshape(1, dim)
+        tst_label[0] = 0
+        tst_label[1] = 1
+
+        """
+        print 'standardization'
+        trn_data = preprocessing.scale(trn_data)
+        tst_data = preprocessing.scale(tst_data)
         clf = NuSVC(nu=0.5, kernel = 'linear')
         clf.fit(trn_data, trn_label)
         pred_label = clf.predict(tst_data)
         print pred_label
         print clf.decision_function(tst_data)
-
         accu = sum(pred_label == tst_label)/float(len(pred_label))
+        """
 
-    np.savez_compressed(options['working_path']+opt_group_folder+args.align_algo+'_acc_'+str(new_niter)+'.npz',accu = accu)
+    print 'standardization'
+    #print trn_data
+    #print tst_data
+    #trn_data_scaled = preprocessing.scale(trn_data)
+    #tst_data_scaled = preprocessing.scale(tst_data)
+    scaler = preprocessing.StandardScaler().fit(trn_data)
+    trn_data_scaled = scaler.transform(trn_data)
+    tst_data_scaled = scaler.transform(tst_data)
+    #print trn_data_scaled
+    #print tst_data_scaled
+    clf = NuSVC(nu=0.5, kernel = 'linear')
+    clf.fit(trn_data_scaled, trn_label)
+    pred_label = clf.predict(tst_data_scaled)
+    print pred_label
+    print clf.decision_function(tst_data_scaled)
+    accu = sum(pred_label == tst_label)/float(len(pred_label))
+
+
+    
+    if args.align_algo in ['ppca_idvclas','pica_idvclas']:
+        for it in range(11):
+            np.savez_compressed(options['working_path']+opt_group_folder+args.align_algo+'_acc_'+str(it)+'.npz',accu = accu)
+    else:
+        np.savez_compressed(options['working_path']+opt_group_folder+args.align_algo+'_acc_'+str(itr)+'.npz',accu = accu)
+        #np.savez_compressed(options['working_path']+opt_group_folder+args.align_algo+'_acc_'+str(10)+'.npz',accu = accu)
+    print options['working_path']+opt_group_folder+args.align_algo+'_acc_'+str(itr)+'.npz'
     print np.mean(accu)
+

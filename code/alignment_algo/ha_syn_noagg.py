@@ -10,7 +10,7 @@ import numpy as np, scipy, random, sys, math, os
 from scipy import stats
 
 def align(movie_data, options, args, lrh):
-  print 'HA syn',
+  print 'HA syn noagg',
   sys.stdout.flush()
 
   nvoxel = movie_data.shape[0]
@@ -59,21 +59,26 @@ def align(movie_data, options, args, lrh):
       print '.',
       sys.stdout.flush()
 
-      G_tmp = G*nsubjs - movie_data_zscore[:,:,m].T.dot(R[:,:,m]) # G_tmp = G-XR
-      G_tmp = G_tmp/float(nsubjs-1)
+      #G_tmp = G*nsubjs - movie_data_zscore[:,:,m].T.dot(R[:,:,m]) # G_tmp = G-XR
+      #G_tmp = G_tmp/float(nsubjs-1)
 
       sys.stdout.flush()
-      Am = movie_data_zscore[:,:,m].dot(G_tmp)
+      Am = movie_data_zscore[:,:,m].dot(G)
       #print Am
       pert = np.zeros((Am.shape))
       np.fill_diagonal(pert,1,wrap=True)
       Um, sm, Vm = np.linalg.svd(Am+pert,full_matrices=False)
 
       R[:,:,m] = Um.dot(Vm) # R = UV^T
-      G = G_tmp*(nsubjs-1) + movie_data_zscore[:,:,m].T.dot(R[:,:,m]) #G = G_tmp + XR
-      G = G/float(nsubjs)
+      #G = G_tmp*(nsubjs) + movie_data_zscore[:,:,m].T.dot(R[:,:,m]) #G = G_tmp + XR
+      #G = G/float(nsubjs)
 
-  """
+  G = np.zeros((nTR,nfeature))      
+  for m in range(nsubjs):
+      G = G + movie_data_zscore[:,:,m].T.dot(R[:,:,m])
+  G = G/float(nsubjs)
+
+  """    
   for m in range(nsubjs):
       Am = movie_data_zscore[:,:,m].dot(G)
       pert = np.zeros((Am.shape))
@@ -81,6 +86,15 @@ def align(movie_data, options, args, lrh):
       Um, sm, Vm = np.linalg.svd(Am+0.001*pert, full_matrices=False) #USV = svd(X^TG)
       R[:,:,m] = Um.dot(Vm) # R = UV^T
   """
+
+  def obj_func(bX, bW, S):
+      obj_val_tmp = 0
+      for m in range(nsubjs):
+          obj_val_tmp += np.linalg.norm(bX[:, :, m] - bW[:, :, m].dot(S), 'fro')
+      #print obj_val_tmp
+      return obj_val_tmp
+
+  print obj_func(movie_data_zscore, R, G.T)
 
   new_niter = niter + 1
   np.savez_compressed(current_file, niter = new_niter)

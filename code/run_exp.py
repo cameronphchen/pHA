@@ -211,17 +211,19 @@ for i in range(args.niter):
   
   if args.align_algo != 'noalign':
     if args.loo == None:
-      new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
-      new_niter_rh = algo.align(align_data_rh, options, args, 'rh')
+        new_niter_lh = algo.align(align_data_lh, options, args, 'lh')
+        new_niter_rh = algo.align(align_data_rh, options, args, 'rh')
     else:
-      new_niter_lh = algo.align(align_data_lh_loo, options, args, 'lh')
-      new_niter_rh = algo.align(align_data_rh_loo, options, args, 'rh')
-    # make sure right and left brain alignment are working at the same iterations
+        new_niter_lh = algo.align(align_data_lh_loo, options, args, 'lh')
+        new_niter_rh = algo.align(align_data_rh_loo, options, args, 'rh')
+      # make sure right and left brain alignment are working at the same iterations
     assert new_niter_lh == new_niter_rh
 
 
   if args.align_algo in ['pica','ppca']:
     new_niter_lh = new_niter_rh = 10
+  #elif args.align_algo in ['ha_sm_retraction','ha_syn','ha_syn_noagg']:
+  #  new_niter_lh = new_niter_rh = 0
 
   # load transformation matrices
   if args.align_algo != 'noalign' :

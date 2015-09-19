@@ -36,8 +36,11 @@ def align(movie_data, options, args, lrh):
     U, s, VT = np.linalg.svd(bX, full_matrices=False)
 
     bW = U[:,range(nfeature)]
+    ES = np.diag(s).dot(VT)
+    ES = ES[:nfeature,:]
+
     niter = 10 
     # initialization when first time run the algorithm
     np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(niter)+'.npz',\
-          bW = bW,  niter=niter)
+          bW = bW, ES=ES, niter=niter)
     return niter

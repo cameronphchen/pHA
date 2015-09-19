@@ -9,7 +9,7 @@ from scipy.signal import butter, lfilter
 from scipy import stats
 
 roi = 'ac'
-bp = 'bphp-1lp2.25'
+bp = 'bphp37.5lp1'
 template_path = '/jukebox/fastscratch/pohsuan/pHA/data/raw/studyforrest/templates/grpbold7Tp1/from_mni/'
 mask_fname = os.path.join(template_path, roi+'_mask.nii.gz')
 nsubj = 20

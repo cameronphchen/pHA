@@ -36,7 +36,7 @@ pprint.pprint(args.__dict__,width=1)
 
 #####################List out all the algos to show in fig#####################
 
-os.system("python create_algo_list.py")
+os.system("python create_algo_list_objVSacc.py")
 pkl_file = open('algo_list.pkl', 'rb')
 algo_list = pickle.load(pkl_file)
 pkl_file.close()
@@ -91,7 +91,7 @@ def get_obj(obj_file_lh, obj_file_rh, args_tmp):
             if args_tmp.align_algo in ['ha','ha_sm_retraction']:
                 obj_val_tmp += np.linalg.norm(transform_lh[:, :, m].T.dot(align_data_lh[:, :, m]) - obj_ws_lf['G'].T, 'fro')
                 obj_val_tmp += np.linalg.norm(transform_rh[:, :, m].T.dot(align_data_rh[:, :, m]) - obj_ws_rf['G'].T, 'fro')
-            elif args_tmp.align_algo in ['ha_syn','pha_em']:
+            elif args_tmp.align_algo in ['ha_syn','pha_em','ha_syn_noagg']:
                 obj_val_tmp += np.linalg.norm(align_data_lh[:, :, m] - transform_lh[:, :, m].dot(obj_ws_lf['G'].T), 'fro')
                 obj_val_tmp += np.linalg.norm(align_data_rh[:, :, m] - transform_rh[:, :, m].dot(obj_ws_rf['G'].T), 'fro')
         return obj_val_tmp
@@ -111,8 +111,8 @@ def get_obj(obj_file_lh, obj_file_rh, args_tmp):
         return -1, True
 
 
-for itr in range(1,args.niter):
-    print '|',
+for itr in range(args.niter):
+    print str(itr)+'|',
     sys.stdout.flush()
     for i, algo in enumerate(algo_list):
         print '.',
@@ -161,11 +161,11 @@ np.save('obj_mean',obj_mean)
 np.save('obj_se',obj_se)
 np.save('name',name)
 
-acc_mean = np.load('acc_mean.npy')
-acc_se = np.load('acc_se.npy')
-obj_mean = np.load('obj_mean.npy')
-obj_se = np.load('obj_se.npy')
-name = np.load('name.npy')
+#acc_mean = np.load('acc_mean.npy')
+#acc_se = np.load('acc_se.npy')
+#obj_mean = np.load('obj_mean.npy')
+#obj_se = np.load('obj_se.npy')
+#name = np.load('name.npy')
 
 # set font size
 font = {'family': 'serif', 'size': 8}

@@ -107,7 +107,7 @@ def align(movie_data, options, args, lrh):
   np.savez_compressed(current_file, niter = new_niter)  
   np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter)+'.npz',\
                       bSig_s = bSig_s, bW = bW, bmu=bmu, sigma2=sigma2, ES=ES, niter=new_niter)
-  
+  os.remove(options['working_path']+align_algo+'_'+lrh+'_'+str(new_niter-1)+'.npz')
   # calculate log likelihood
   sign , logdet = np.linalg.slogdet(bSig_x)
   if sign == -1:
@@ -117,8 +117,8 @@ def align(movie_data, options, args, lrh):
 
   np.savez_compressed(options['working_path']+align_algo+'_'+'loglikelihood_'+lrh+'_'+str(new_niter)+'.npz',\
                    loglike=loglike)
-
+  
 #  print str(-0.5*nTR*logdet)+','+str(-0.5*np.trace(bX.T.dot(inv_bSig_x).dot(bX)))
-#  print str(loglike) 
+  print str(loglike) 
 
   return new_niter

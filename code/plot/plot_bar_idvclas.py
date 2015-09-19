@@ -11,6 +11,9 @@ import pickle
 import os
 
 parser = argparse.ArgumentParser()
+parser.add_argument("exp"     , 
+                    help="exp_type")
+
 parser.add_argument("dataset",    help="name of the dataset")
 parser.add_argument("nvoxel", 
                     help="number of voxels in the dataset")
@@ -33,7 +36,7 @@ pprint.pprint(args.__dict__,width=1)
 
 #####################List out all the algos to show in fig#####################
 
-os.system("python create_algo_list_idvclas.py")
+os.system('python create_algo_list_{}.py'.format(args.exp))
 pkl_file = open('algo_list.pkl', 'rb')
 algo_list = pickle.load(pkl_file)
 pkl_file.close()
@@ -50,7 +53,8 @@ all_mean = np.zeros((len(name)))
 all_se   = np.zeros((len(name)))
 
 data_folder = args.dataset+'/'+args.nvoxel+'vx/'+args.nTR+'TR/'
-exp_folder  = 'idvclas_svm/'
+#exp_folder  = 'idvclas_svm/'
+exp_folder  = args.exp+'/'
 
 working_path = '/fastscratch/pohsuan/pHA/data/working/'+data_folder+exp_folder
 output_path  = '/jukebox/ramadge/pohsuan/pHA/data/output/'
@@ -115,7 +119,7 @@ rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_confi
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 #plt.xlabel('Alignment Methods')
-plt.xlim([-0.5,3.5])
+plt.xlim([-0.5,9])
 plt.ylim([0,1])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
@@ -131,6 +135,6 @@ autolabel(rects)
 #plt.text(.12, .05, 'Image Category Prediction', horizontalalignment='right', verticalalignment='top')
 plt.title('Group Classification \n{}feat removed {} {}vx {}TRs'.format(args.allfeat,args.dataset.replace('_','-'),args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'idvclas_svm'+'_sharedall'+str(args.allfeat) + args.niter+'thIter']
+                args.exp+'_sharedall'+str(args.allfeat) + args.niter+'thIter']
 plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
 np.savez_compressed(output_path + '_'.join(filename_list) + '.npz',name = name, all_mean = all_mean, all_se = all_se)

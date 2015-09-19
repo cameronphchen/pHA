@@ -11,6 +11,7 @@ import pickle
 import os
 
 parser = argparse.ArgumentParser()
+parser.add_argument("tag",    help="all or paper")
 parser.add_argument("dataset",    help="name of the dataset")
 parser.add_argument("nvoxel", 
                     help="number of voxels in the dataset")
@@ -31,7 +32,7 @@ pprint.pprint(args.__dict__,width=1)
 
 #####################List out all the algos to show in fig#####################
 
-os.system("python create_algo_list.py")
+os.system('python algo_list_plot_{}/create_algo_list_{}.py'.format(args.tag,args.dataset))
 pkl_file = open('algo_list.pkl', 'rb')
 algo_list = pickle.load(pkl_file)
 pkl_file.close()
@@ -94,8 +95,8 @@ for i in range(len(algo_list)):
     all_se  [i] = np.std(acc_tmp)/math.sqrt(args.nsubjs)
 
 
-if missing_file:
-    sys.exit('missing file')
+#if missing_file:
+#    sys.exit('missing file')
 
 # set font size
 font = {'family' : 'serif',
@@ -104,7 +105,7 @@ font = {'family' : 'serif',
 plt.rc('text', usetex=True)
 plt.rc('font', **font)
 
-aspectratio=4.5
+aspectratio=5
 idx = range(len(algo_list))
 
 plt.figure()
@@ -114,7 +115,7 @@ rects = plt.bar(idx, all_mean, yerr=all_se, align='center', error_kw=error_confi
 plt.xticks(idx, name,rotation='vertical')
 plt.ylabel('Accuracy')
 plt.xlabel('Alignment Methods')
-plt.ylim([0,0.3])
+plt.ylim([0,1])
 plt.axes().set_aspect(aspectratio)
 plt.legend(loc=4)
 
@@ -130,6 +131,6 @@ autolabel(rects)
 #plt.text(.12, .01, 'Skinny Random Matrices', horizontalalignment='left', verticalalignment='bottom')
 plt.title('Movie Segment ({}TRs) Classification {} {}vx {}TRs'.format(args.winsize, args.dataset.replace('_','-') ,args.nvoxel, args.nTR))
 filename_list = ['bar_accuracy', args.dataset , args.nvoxel+'vx', args.nTR+'TR' ,\
-                'mysseg', str(args.winsize)+'winsize' , args.niter+'thIter']
-plt.savefig(output_path + '_'.join(filename_list) + '_spha.eps', format='eps', dpi=200,bbox_inches='tight')
-
+                'mysseg', str(args.winsize)+'winsize' , args.niter+'thIter', args.tag]
+plt.savefig(output_path + '_'.join(filename_list) + '.eps', format='eps', dpi=200,bbox_inches='tight')
+np.savez_compressed(output_path + '_'.join(filename_list) + '.npz',name = name, all_mean = all_mean, all_se = all_se)

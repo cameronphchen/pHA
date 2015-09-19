@@ -38,11 +38,11 @@ def align(movie_data, options, args, lrh):
 
     ica = FastICA(n_components= nfeature, max_iter=500,w_init=A,random_state=randseed)
     St = ica.fit_transform(bX.T)
-    S = St.T
+    ES = St.T
     bW = ica.mixing_
 
     niter = 10  
     # initialization when first time run the algorithm
     np.savez_compressed(options['working_path']+align_algo+'_'+lrh+'_'+str(niter)+'.npz',\
-                                bW = bW, S=S, niter=niter)
+                                bW = bW, ES=ES, niter=niter)
     return niter

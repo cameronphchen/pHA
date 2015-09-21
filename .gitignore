@@ -9,6 +9,7 @@ __pycache__/
 /code/sh_script/mysseg/archive/
 /code/sh_script/mysseg_loo/archive/
 /code/sh_script/idvclas/archive/
+/code/sh_script/imgtrn_mysseg_loo/archive/
 
 # pickle datafile
 *.pkl

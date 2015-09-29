@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-# EM algorithm for probabilistic Hyperalignment
+# Constrainted EM algorithm for Shared Response Model
+
+# A Reduced-Dimension fMRI Shared Response Model
+# Po-Hsuan Chen, Janice Chen, Yaara Yeshurun-Dishon, Uri Hasson, James Haxby, Peter Ramadge 
+# Advances in Neural Information Processing Systems (NIPS), 2015. (to appear) 
 
 # movie_data is a three dimensional matrix of size voxel x TR x nsubjs
 # movie_data[:,:,m] is the data for subject m, which will be X_m^T in the standard 
